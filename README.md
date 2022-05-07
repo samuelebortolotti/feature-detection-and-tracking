@@ -10,11 +10,12 @@ Feture detection and tracking is a collection of methods concerning feature dete
 
 ## Requirements
 
-The code as-is runs in Python 3.9 with the following dependencies:
+The code as-is runs in Python 3.9 with the following dependencies
 
 - [opencv](https://opencv.org/)
+- [matplotlib](https://matplotlib.org/)
 
-And the following development dependencies:
+And the following development dependencies
 
 - [Sphinx](https://www.sphinx-doc.org/en/master/)
 
@@ -22,20 +23,20 @@ And the following development dependencies:
 
 Follow these instructions to set up the project on your PC.
 
-Moreover, to facilitate the use of the application, a Makefile has been provided; to see its functions, simply call the appropriate help command with [GNU/Make](https://www.gnu.org/software/make/):
+Moreover, to facilitate the use of the application, a Makefile has been provided; to see its functions, simply call the appropriate help command with [GNU/Make](https://www.gnu.org/software/make/)
 
  ```bash
  make help
  ```
 
-1. Clone the repository
+### 1. Clone the repository
 
  ```bash
  git clone https://github.com/samuelebortolotti/feature-detection-and-tracking.git
  cd feature-detection-and-tracking
  ```
 
-2. Install the requirements
+### 2. Install the requirements
 
 ```bash
 pip install --upgrade pip
@@ -43,7 +44,7 @@ pip install -r requirements.txt
 ```
 
 > **Note**: it might be convenient to create a virtual enviroment to handle the dependencies.
-
+> 
 > The `Makefile` provides a simple and convenient way to manage Python virtual environments (see [venv](https://docs.python.org/3/tutorial/venv.html)).
 > In order to create the virtual enviroment and install the requirements be sure you have the Python 3.9 (it should work even with more recent versions, however I have tested it only with 3.9)
 > ```bash
@@ -56,11 +57,11 @@ pip install -r requirements.txt
 > deactivate
 > ```
 
-3. Generate the code documentation
+### 3. Generate the code documentation
 
 The automatic code documentation is provided [Sphinx v4.5.0](https://www.sphinx-doc.org/en/master/).
 
-In order to have the code documentation available, you need to install the development requirements:
+In order to have the code documentation available, you need to install the development requirements
 
 ```bash
 pip install --upgrade pip
@@ -80,7 +81,7 @@ The generated documentation will be accessible by opening `docs/build/html/index
 make open-doc
 ```
 
-However, for the sake of completness one may want to run the full Sphinx commands listed here:
+However, for the sake of completness one may want to run the full Sphinx commands listed here
 
 ```bash
 sphinx-quickstart docs --sep --no-batchfile --project feature-detection-and-tracking --author "Samuele Bortolotti"  -r 0.1  --language en --extensions sphinx.ext.autodoc --extensions sphinx.ext.napoleon --extensions sphinx.ext.viewcode --extensions myst_parser

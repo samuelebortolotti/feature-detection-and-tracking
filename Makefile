@@ -6,6 +6,7 @@ PROJECT_NAME := fdt
 PYTHON := python3
 PYFLAGS := -m
 PIP := pip
+UPGRADE_PIP := --upgrade pip
 
 # ======= MAIN =====================
 MAIN := fdt
@@ -99,16 +100,13 @@ env:
 
 install:
 	@$(ECHO) '$(GREEN)Installing requirements..$(NONE)'
+	@$(PYTHON) -m pip install $(UPGRADE_PIP)
 	@pip install -r requirements.txt
-	@$(ECHO) '$(GREEN)Done$(NONE)'
-
-install-mmlab:
-	@$(ECHO) '$(GREEN)Installing requirements for MMlab GPU..$(NONE)'
-	@pip install -r requirements.mmlabgpu.txt
 	@$(ECHO) '$(GREEN)Done$(NONE)'
 
 install-dev:
 	@$(ECHO) '$(GREEN)Installing requirements..$(NONE)'
+	@$(PYTHON) -m pip install $(UPGRADE_PIP)
 	@$(PIP) install -r requirements.dev.txt
 	@$(ECHO) '$(GREEN)Done$(NONE)'
 
