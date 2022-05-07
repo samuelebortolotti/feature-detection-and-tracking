@@ -7,6 +7,7 @@ of the master's degree program in Computer Science at University of Trento
 import argparse
 from argparse import Namespace
 import fdt.detection as detectors
+import fdt.tracking as trackers
 import matplotlib
 
 
@@ -30,6 +31,9 @@ def get_args() -> Namespace:
     subparsers = parser.add_subparsers(help="sub-commands help")
     # configure detector subparsers
     detectors.sift.configure_subparsers(subparsers)
+    detectors.orb.configure_subparsers(subparsers)
+    # configure trackers subparsers
+    trackers.kalman.configure_subparsers(subparsers)
 
     # open cv camera
     parser.add_argument(

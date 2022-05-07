@@ -13,3 +13,6 @@ docs/
 # python venv
 venv
 .python-version
+
+# TODO file
+TODO.md
