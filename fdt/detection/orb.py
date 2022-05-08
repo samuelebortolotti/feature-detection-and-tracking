@@ -3,9 +3,11 @@
 from argparse import _SubParsersAction as Subparser
 from argparse import Namespace
 import cv2
+from fdt.detection.utils import draw_features_keypoints
 from fdt.plotter import plot_image
 import numpy as np
 import os
+from typing import Tuple
 
 
 def configure_subparsers(subparsers: Subparser) -> None:
@@ -34,55 +36,54 @@ def configure_subparsers(subparsers: Subparser) -> None:
 
 
 def main(args: Namespace) -> None:
-    r"""Checks the command line arguments and then runs the orb algorithm
+    r"""Checks the command line arguments and then runs the ORB algorithm
+    on an image, showing the result.
+    This is employed only for visualization purposes
 
     Args:
       args (Namespace): command line arguments
-    """
 
+    Raises:
+      AssertionError: if the image at `image` does not exists
+    """
     print("\n### ORB feature detector ###")
     print("> Parameters:")
     for p, v in zip(args.__dict__.keys(), args.__dict__.values()):
         print("\t{}: {}".format(p, v))
     print("\n")
 
-    # call the orb algorithm
-    orb_image = orb(image_path=args.image, n_features=args.nfeatures)
+    # assert an exception if the image does not exists
+    assert os.path.exists(args.image), "Image passed does not exist"
+
+    # read the colored version of the image
+    image_bgr = cv2.imread(args.image)
+
+    # call the ORB algorithm
+    orb_kp, orb_desc = orb(frame=image_bgr, n_features=args.nfeatures)
+
+    # draw the keypoints
+    orb_image = draw_features_keypoints(image_bgr, orb_kp)
 
     # plot orb_image
     plot_image(orb_image, f"ORB descriptors {os.path.basename(args.image)}")
 
 
-def orb(image_path: str, n_features: int) -> np.ndarray:
-    r"""Apply the ORB feature detector on an image
+def orb(frame: np.ndarray, n_features: int) -> Tuple[np.ndarray, np.ndarray]:
+    """Apply the ORB feature detector on a frame
 
     Args:
-      image_path (str): image path
-      n_features (int): number of features to retain
+      frame (np.ndarray): frame [BGR]
 
     Returns:
-      np.ndarray: gray scale image containing the ORB keypoints
-
-    Raises:
-      AssertionError: if the image at `image_path` does not exists
+      Tuple[np.ndarray, np.ndarray]: ORB keypoints and descriptors of the frame
     """
-    # assert if the path does not exits
-    assert os.path.exists(image_path), "Image passed does not exists"
-    # loat the image as grayscale image
-    image_bgr = cv2.imread(image_path)
-    image_gray = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2GRAY)
+    # load the frame as grayscale
+    frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-    # Step 1: detect SIFT features
+    # ORB
     orb = cv2.ORB_create(n_features)
-    # finds the keypoint
-    keypoints, descriptors = orb.detectAndCompute(image_gray, None)
 
-    # Step 2: shows the SIFT keypoints
-    img_sfit = cv2.drawKeypoints(
-        image_gray,
-        keypoints,
-        image_gray,
-        flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS,
-    )
+    # finds the keypoint and the descriptors
+    keypoints, descriptors = orb.detectAndCompute(frame_gray, None)
 
-    return img_sfit
+    return keypoints, descriptors
