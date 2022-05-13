@@ -7,6 +7,7 @@ of the master's degree program in Computer Science at University of Trento
 import argparse
 from argparse import Namespace
 import fdt.detection as detectors
+import fdt.detection.matcher as matcher
 import fdt.tracking as trackers
 import matplotlib
 
@@ -32,6 +33,8 @@ def get_args() -> Namespace:
     # configure detector subparsers
     detectors.sift.configure_subparsers(subparsers)
     detectors.orb.configure_subparsers(subparsers)
+    # configure matcher subparser
+    matcher.configure_subparsers(subparsers)
     # configure trackers subparsers
     trackers.kalman.configure_subparsers(subparsers)
 
