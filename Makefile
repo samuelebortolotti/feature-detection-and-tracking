@@ -13,6 +13,26 @@ MAIN := fdt
 MAIN_FLAGS :=
 PIP := pip
 
+# ======= SIFT =====================
+SIFT := sift 
+SIFT_IMAGE := material/test/calchera.jpg
+SIFT_FLAGS := --nfeatures 150
+
+# ======= ORB ======================
+ORB := orb 
+ORB_IMAGE := material/test/calchera.jpg
+ORB_FLAGS := --nfeatures 150
+
+# ======= MATCHER ==================
+MATCHER := matcher
+MATCHER_METHOD := sift
+MATCHER_FLAGS := --nfeatures 150 --flann --matchingdist 60 --video material/Contesto_industriale1.mp4 --frameupdate 30
+
+# ======= KALMAN ==================
+KALMAN := kalman
+KALMAN_METHOD := orb
+KALMAN_FLAGS := --nfeatures 150 --flann --matchingdist 60 --video material/Contesto_industriale1.mp4 --frameupdate 30
+
 # ======= FORMAT ===================
 FORMAT := black
 FORMAT_FLAG := fdt
@@ -79,7 +99,7 @@ OPEN := xdg-open
 SED := sed
 	
 # RULES
-.PHONY: help env install install-dev doc doc-layout open-doc format-code
+.PHONY: help env install install-dev sift, orb, matcher, kalman, doc doc-layout open-doc format-code
 
 help:
 	@$(ECHO) '$(YELLOW)Makefile help$(NONE)'
@@ -87,6 +107,10 @@ help:
 	* env 			: generates the virtual environment using the current python version and venv\n \
 	* install		: install the requirements listed in requirements.txt\n \
 	* install-dev		: install the development requirements listed in requirements.dev.txt\n \
+	* sift			: run the SIFT feature detector on the image passed as parameter\n \
+	* orb			: run the ORB feature detector on the image passed as parameter\n \
+	* matcher		: run either the brute force matcher or the FLANN matcher on a video\n \
+	* kalman		: run the kalman filter to track the feature on a video\n \
 	* doc-layout 		: generates the Sphinx documentation layout\n \
 	* doc 			: generates the documentation (requires an existing documentation layout)\n \
 	* open-doc 		: opens the documentation\n"
@@ -109,6 +133,26 @@ install-dev:
 	@$(PYTHON) -m pip install $(UPGRADE_PIP)
 	@$(PIP) install -r requirements.dev.txt
 	@$(ECHO) '$(GREEN)Done$(NONE)'
+
+sift:
+	@$(ECHO) '$(BLUE)Running SIFT on an image ..$(NONE)'
+	@$(PYTHON) $(PYFLAGS) $(MAIN) $(MAIN_FLAGS) $(SIFT) $(SIFT_IMAGE) $(SIFT_FLAGS)
+	@$(ECHO) '$(BLUE)Done$(NONE)
+
+orb:
+	@$(ECHO) '$(BLUE)Running ORB on an image ..$(NONE)'
+	@$(PYTHON) $(PYFLAGS) $(MAIN) $(MAIN_FLAGS) $(ORB) $(ORB_IMAGE) $(ORB_FLAGS)
+	@$(ECHO) '$(BLUE)Done$(NONE)
+
+matcher:
+	@$(ECHO) '$(BLUE)Running the keypoint matcher ..$(NONE)'
+	@$(PYTHON) $(PYFLAGS) $(MAIN) $(MAIN_FLAGS) $(MATCHER) $(MATCHER_METHOD) $(MATCHER_FLAGS)
+	@$(ECHO) '$(BLUE)Done$(NONE)
+
+kalman:
+	@$(ECHO) '$(BLUE)Running the feature tracking employing a feature detector and Kalman filters ..$(NONE)'
+	@$(PYTHON) $(PYFLAGS) $(MAIN) $(MAIN_FLAGS) $(KALMAN) $(KALMAN_METHOD) $(KALMAN_FLAGS)
+	@$(ECHO) '$(BLUE)Done$(NONE)
 
 doc-layout:
 	@$(ECHO) '$(BLUE)Generating the Sphinx layout..$(NONE)'

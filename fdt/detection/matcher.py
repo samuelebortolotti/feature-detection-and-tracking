@@ -13,7 +13,9 @@ from typing import List, Union, Any
 from . import METHODS
 
 
-def from_matches_to_points(keypoints: List[cv2.KeyPoint], matches: List[cv2.DMatch]) -> List[cv2.KeyPoint]:
+def from_matches_to_points(
+    keypoints: List[cv2.KeyPoint], matches: List[cv2.DMatch]
+) -> List[cv2.KeyPoint]:
     """Method which converts the matched points from the °cv2.DMatch° class to
     `cv2.KeyPoint`
 
@@ -58,7 +60,10 @@ def match_features(
         filter(lambda x: x.distance < max_matching_distance, matching_points)
     )
     # return the effective_matches
-    return from_matches_to_points(second_keypoints, effective_matches), effective_matches
+    return (
+        from_matches_to_points(second_keypoints, effective_matches),
+        effective_matches,
+    )
 
 
 def draw_features_matched(
@@ -105,9 +110,11 @@ def configure_subparsers(subparsers: Subparser) -> None:
     Subparser parameters
     Args:
       method (str): feature detector
+      nfeatures (int): number of features for the feature detector [default: 100]
       video (str): video file path if you are willing to run the algorithm on a video
       matchingdist (int): matching distance for the matcher [default=150]
       flann (bool): whether to use the flann based matcher [default=False]
+      frameupdate (int): after how many frame to recalibrate the features [default=50]
     """
 
     parser = subparsers.add_parser("matcher", help="Feature matcher")
@@ -122,13 +129,20 @@ def configure_subparsers(subparsers: Subparser) -> None:
         "--nfeatures", "-NF", type=int, default=100, help="Number of features to retain"
     )
     parser.add_argument(
-        "--flann", "-F", action='store_true', help="Use the FLANN matcher"
+        "--flann", "-F", action="store_true", help="Use the FLANN matcher"
     )
     parser.add_argument(
         "--matchingdist", "-MD", type=int, default=150, help="Matching distance"
     )
     parser.add_argument(
         "--video", "-V", type=str, help="Video on which to run the Kalman filter"
+    )
+    parser.add_argument(
+        "--frameupdate",
+        "-FU",
+        type=int,
+        default=50,
+        help="After how many frames to recalibrate",
     )
     # set the main function to run when Kalman is called from the command line
     parser.set_defaults(func=main)
@@ -153,11 +167,25 @@ def main(args: Namespace) -> None:
 
     # call the feature matcing algorithm
     feature_matching(
-        camera_index=args.camera, video=args.video, method=args.method, n_features=args.nfeatures, matching_distance=args.matchingdist, flann=args.flann
+        camera_index=args.camera,
+        video=args.video,
+        method=args.method,
+        n_features=args.nfeatures,
+        matching_distance=args.matchingdist,
+        update_every_n_frame=args.frameupdate,
+        flann=args.flann,
     )
 
 
-def feature_matching(camera_index: int, video: str, method: str, n_features: int, matching_distance: int, flann: bool) -> None:
+def feature_matching(
+    camera_index: int,
+    video: str,
+    method: str,
+    n_features: int,
+    matching_distance: int,
+    update_every_n_frame: int,
+    flann: bool,
+) -> None:
     """Matches the features using a BFMatcher and the first frame as a reference according
     to the method passed
 
@@ -166,6 +194,9 @@ def feature_matching(camera_index: int, video: str, method: str, n_features: int
       video (str): video path if any
       method (str): feature detector method
       n_features (int): number of features to extract
+      matchingdist (int): matching distance for the matcher
+      update_every_n_frame (int): after how many frame to recalibrate the features
+      flann (bool): whether to use the flann based matcher
     """
     # video capture input
     cap_input = video
@@ -175,27 +206,25 @@ def feature_matching(camera_index: int, video: str, method: str, n_features: int
     # open the capture
     cap = cv2.VideoCapture(cap_input)
 
-    # UPDATE EVERY
-    """How frequently to update the reference keypoints
-    """
-    UPDATE_EVERY = 5
-
+    # set the parameters of the matcher according to the chosen feature detection method
     if method == "sift":
         # SIFT
         feature_extract = sift
         feature_matching_mode = cv2.NORM_L2
         FLANN_INDEX_KDTREE = 1
-        feature_index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
+        feature_index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
     else:
         # ORB
         feature_extract = orb
         feature_matching_mode = cv2.NORM_HAMMING
         # FLANN index LSH
         FLANN_INDEX_LSH = 6
-        feature_index_params= dict(algorithm = FLANN_INDEX_LSH,
-                   table_number = 6, # 12
-                   key_size = 12,     # 20
-                   multi_probe_level = 1) #2
+        feature_index_params = dict(
+            algorithm=FLANN_INDEX_LSH,
+            table_number=6,  # 12
+            key_size=12,  # 20
+            multi_probe_level=1,
+        )  # 2
 
     # Brute force point matcher
     if not flann:
@@ -227,11 +256,13 @@ def feature_matching(camera_index: int, video: str, method: str, n_features: int
         frame = imutils.resize(frame, width=550)
 
         # whether to update the feature matched
-        if frame_counter % UPDATE_EVERY == 0:
+        if frame_counter % update_every_n_frame == 0:
             # new reference frame
             reference_frame = frame.copy()
             # extract the new reference keypoints and reference descriptors
-            keypoints_to_match, descriptors_to_match = feature_extract(frame, n_features)
+            keypoints_to_match, descriptors_to_match = feature_extract(
+                frame, n_features
+            )
 
         # extract current keypoints and descriptors
         keypoints, descriptors = feature_extract(frame, n_features)
@@ -242,7 +273,7 @@ def feature_matching(camera_index: int, video: str, method: str, n_features: int
             first_descriptors=descriptors_to_match,
             second_descriptors=descriptors,
             second_keypoints=keypoints,
-            max_matching_distance=matching_distance
+            max_matching_distance=matching_distance,
         )
 
         # show the matches frame
@@ -260,7 +291,7 @@ def feature_matching(camera_index: int, video: str, method: str, n_features: int
         # to wait
         wait = 1
         # sift is slow, thus I prefer to speed up the vide
-        if method == 'sift':
+        if method == "sift":
             wait = 33
 
         # exit when q is pressed

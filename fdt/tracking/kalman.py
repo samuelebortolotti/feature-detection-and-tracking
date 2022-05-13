@@ -2,10 +2,15 @@
 """
 from argparse import _SubParsersAction as Subparser
 from argparse import Namespace
+from ..config.kalman_config import custom_conf
 import cv2
 from fdt.detection import METHODS
 from fdt.detection import matcher
-from fdt.detection.matcher import feature_matching, match_features, draw_features_matched
+from fdt.detection.matcher import (
+    feature_matching,
+    match_features,
+    draw_features_matched,
+)
 from fdt.detection.orb import orb
 from fdt.detection.utils import draw_features_keypoints
 from fdt.detection.sift import sift
@@ -99,6 +104,7 @@ def configure_subparsers(subparsers: Subparser) -> None:
       video (str): video file path if you are willing to run the algorithm on a video
       flann (bool): whether to use the flann based matcher [default=False]
       matchingdist (int): matching distance for the matcher [default=150]
+      frameupdate (int): after how many frame to recalibrate the features [default=50]
     """
 
     parser = subparsers.add_parser("kalman", help="Kalman feature tracker")
@@ -116,10 +122,17 @@ def configure_subparsers(subparsers: Subparser) -> None:
         "--video", "-V", type=str, help="Video on which to run the Kalman filter"
     )
     parser.add_argument(
-        "--flann", "-F", action='store_true', help="Use the FLANN matcher"
+        "--flann", "-F", action="store_true", help="Use the FLANN matcher"
     )
     parser.add_argument(
         "--matchingdist", "-MD", type=int, default=150, help="Matching distance"
+    )
+    parser.add_argument(
+        "--frameupdate",
+        "-FU",
+        type=int,
+        default=50,
+        help="After how many frames to recalibrate",
     )
     # set the main function to run when Kalman is called from the command line
     parser.set_defaults(func=main)
@@ -148,11 +161,20 @@ def main(args: Namespace) -> None:
         method=args.method,
         n_features=args.nfeatures,
         matching_distance=args.matchingdist,
-        flann=args.flann
+        update_every_n_frame=args.frameupdate,
+        flann=args.flann,
     )
 
 
-def kalman(camera_index: int, video: str, method: str, n_features: int, matching_distance: int, flann: bool) -> None:
+def kalman(
+    camera_index: int,
+    video: str,
+    method: str,
+    n_features: int,
+    matching_distance: int,
+    update_every_n_frame: int,
+    flann: bool,
+) -> None:
     """Apply the Kalman filter to track the object in the scene
 
     Args:
@@ -161,6 +183,7 @@ def kalman(camera_index: int, video: str, method: str, n_features: int, matching
       methods (str): methods to employ in order to track the features
       n_features (int): number of features for the feature detector
       matchingdist (int): matching distance for the matcher
+      update_every_n_frame (int): after how many frame to recalibrate the features
       flann (bool): whether to use the flann based matcher
     """
     # video capture input
@@ -186,7 +209,7 @@ def kalman(camera_index: int, video: str, method: str, n_features: int, matching
         # mode for the FLANN matcher
         FLANN_INDEX_KDTREE = 1
         # feature parameters for FLANN
-        feature_index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
+        feature_index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
     else:
         # ORB
         feature_extract = orb
@@ -195,10 +218,12 @@ def kalman(camera_index: int, video: str, method: str, n_features: int, matching
         # FLANN index LSH
         FLANN_INDEX_LSH = 6
         # feature parameters for the FLANN matcher
-        feature_index_params= dict(algorithm = FLANN_INDEX_LSH,
-                   table_number = 6, # 12
-                   key_size = 12,     # 20
-                   multi_probe_level = 1) #2
+        feature_index_params = dict(
+            algorithm=FLANN_INDEX_LSH,
+            table_number=6,  # 12
+            key_size=12,  # 20
+            multi_probe_level=1,
+        )  # 2
 
     if not flann:
         # Brute force point matcher, thanks to the crossCheck only the consistent pairs are returned
@@ -221,17 +246,14 @@ def kalman(camera_index: int, video: str, method: str, n_features: int, matching
 
     # Instantiate the Kalman Filter
     kalman = KalmanTracker(
-        dynamic_params=4,
-        measure_params=2,
-        control_params=0,
-        A=np.array(
-            [[1, 0, 1, 0], [0, 1, 0, 1], [0, 0, 1, 0], [0, 0, 0, 1]], np.float32
-        ),
-        w=np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]], np.float32)
-        * 0.003,
-        H=np.array([[1, 0, 0, 0], [0, 1, 0, 0]], np.float32),
-        v=np.array([[1, 0], [0, 1]], np.float32) * 1,
-        B=None,
+        dynamic_params=custom_conf["dynamic_params"],
+        measure_params=custom_conf["measure_params"],
+        control_params=custom_conf["control_params"],
+        A=custom_conf["A"],
+        w=custom_conf["w"],
+        H=custom_conf["H"],
+        v=custom_conf["v"],
+        B=custom_conf["B"],
     )
 
     # frame_counter
@@ -249,7 +271,7 @@ def kalman(camera_index: int, video: str, method: str, n_features: int, matching
         frame = imutils.resize(frame, width=550)
 
         # whether to update the feature matched
-        if frame_counter % UPDATE_EVERY == 0:
+        if frame_counter % update_every_n_frame == 0:
             # extract descriptors and keypoints of the current frame
             _, descriptors_to_match = feature_extract(frame, n_features)
 
@@ -262,7 +284,7 @@ def kalman(camera_index: int, video: str, method: str, n_features: int, matching
             first_descriptors=descriptors_to_match,
             second_descriptors=descriptors,
             second_keypoints=keypoints,
-            max_matching_distance=matching_distance
+            max_matching_distance=matching_distance,
         )
 
         # update the kalman filter based on the measurements

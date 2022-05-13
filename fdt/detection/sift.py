@@ -22,7 +22,6 @@ def configure_subparsers(subparsers: Subparser) -> None:
     Args:
       image (str): image path
       nfeatures (int) [Optional]: number of features to retain [default = 500]
-
     """
     parser = subparsers.add_parser("sift", help="SIFT feature detector")
     parser.add_argument(
