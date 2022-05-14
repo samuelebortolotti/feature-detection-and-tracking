@@ -1,31 +1,45 @@
 import numpy as np
 
+"""Note, as a reminder
+  A (np.ndarray): state transition matrix
+  w (np.ndarray): process noise
+  H (np.ndarray): measurement matrix
+  v (np.ndarray): measurement noise
+  B (np.ndarray): additional and optional control input
+"""
+
 # Configuration which I am modeling right now
 # Trying to complexify the transition matrix A since
 # the tracking is hard in the video I have shown.
-new_custom_conf = {
+custom_conf = {
     "dynamic_params": 6,
     "measure_params": 2,
     "control_params": 0,
     "A": np.array(
         [
-            [1, 0, 1, 0, 0.5, 0],
-            [0, 1, 0, 1, 0, 0.5],
-            [0, 0, 1, 0, 1, 0],
-            [0, 0, 0, 1, 0, 1],
-            [0, 0, 1, 0, 1, 0],
+            [1, 0, 0, 0, 1, 0],
+            [0, 1, 0, 0, 0, 1],
+            [0, 0, 1, 0, 0, 0],
+            [0, 0, 0, 1, 0, 0],
+            [0, 0, 0, 0, 1, 0],
             [0, 0, 0, 0, 0, 1],
         ],
         np.float32,
     ),
-    "w": np.eye(6, dtype=np.float32) * 0.2,
-    "H": np.eye(2, 6, dtype=np.float32),
-    "v": np.eye(2, dtype=np.float32),
+    "w": np.eye(6, dtype=np.float32) * 0.02,
+    "H": np.array(
+        [
+            [1, 0, 0, 0, 0, 0],
+            [0, 1, 0, 0, 0, 0],
+        ],
+        dtype=np.float32,
+    ),
+    "v": np.eye(2, dtype=np.float32) * 0.02,
     "B": None,
 }
 
 # Coniguration we have used in class
-custom_conf = {
+old_custom_conf = {
     "dynamic_params": 4,
     "measure_params": 2,
     "control_params": 0,
