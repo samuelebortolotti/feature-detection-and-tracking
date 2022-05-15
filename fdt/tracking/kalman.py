@@ -2,19 +2,15 @@
 """
 from argparse import _SubParsersAction as Subparser
 from argparse import Namespace
-from ..config.kalman_config import custom_conf
+from ..config.kalman_config import current_conf
 import cv2
 from fdt.detection import METHODS
-from fdt.detection import matcher
 from fdt.detection.matcher import (
-    feature_matching,
     match_features,
-    draw_features_matched,
 )
 from fdt.detection.orb import orb
 from fdt.detection.utils import draw_features_keypoints
 from fdt.detection.sift import sift
-from fdt.plotter import plot_image
 import imutils
 from typing import Optional, Tuple, Any
 import numpy as np
@@ -100,11 +96,12 @@ def configure_subparsers(subparsers: Subparser) -> None:
     Subparser parameters
     Args:
       method (str): feature detector, default [default: sift]
-      nfeatures (int): number of features for the feature detector [default: 100]
+      n-features (int): number of features for the feature detector [default: 100]
       video (str): video file path if you are willing to run the algorithm on a video
       flann (bool): whether to use the flann based matcher [default=False]
-      matchingdist (int): matching distance for the matcher [default=150]
-      frameupdate (int): after how many frame to recalibrate the features [default=50]
+      matching-distance (int): matching distance for the matcher [default=150]
+      frame-update (int): after how many frame to recalibrate the features [default=50]
+      output-video-name (str): file name of the video to produce, if None is passed, no video is produced
     """
 
     parser = subparsers.add_parser("kalman", help="Kalman feature tracker")
@@ -116,7 +113,7 @@ def configure_subparsers(subparsers: Subparser) -> None:
         help="Which feature detector to employ",
     )
     parser.add_argument(
-        "--nfeatures", "-NF", type=int, default=100, help="Number of features to retain"
+        "--n-features", "-NF", type=int, default=100, help="Number of features to retain"
     )
     parser.add_argument(
         "--video", "-V", type=str, help="Video on which to run the Kalman filter"
@@ -125,14 +122,17 @@ def configure_subparsers(subparsers: Subparser) -> None:
         "--flann", "-F", action="store_true", help="Use the FLANN matcher"
     )
     parser.add_argument(
-        "--matchingdist", "-MD", type=int, default=150, help="Matching distance"
+        "--matching-distance", "-MD", type=int, default=150, help="Matching distance"
     )
     parser.add_argument(
-        "--frameupdate",
+        "--frame-update",
         "-FU",
         type=int,
         default=50,
         help="After how many frames to recalibrate",
+    )
+    parser.add_argument(
+        "--output-video-name", "-O", type=str, help="Output video name"
     )
     # set the main function to run when Kalman is called from the command line
     parser.set_defaults(func=main)
@@ -159,10 +159,11 @@ def main(args: Namespace) -> None:
         camera_index=args.camera,
         video=args.video,
         method=args.method,
-        n_features=args.nfeatures,
-        matching_distance=args.matchingdist,
-        update_every_n_frame=args.frameupdate,
+        n_features=args.n_features,
+        matching_distance=args.matching_distance,
+        update_every_n_frame=args.frame_update,
         flann=args.flann,
+        output_video_name=args.output_video_name
     )
 
 
@@ -174,6 +175,7 @@ def kalman(
     matching_distance: int,
     update_every_n_frame: int,
     flann: bool,
+    output_video_name: str
 ) -> None:
     """Apply the Kalman filter to track the object in the scene
 
@@ -182,9 +184,10 @@ def kalman(
       video (str): video path
       methods (str): methods to employ in order to track the features
       n_features (int): number of features for the feature detector
-      matchingdist (int): matching distance for the matcher
+      matching_distance (int): matching distance for the matcher
       update_every_n_frame (int): after how many frame to recalibrate the features
       flann (bool): whether to use the flann based matcher
+      output-video-name (str): file name of the video to produce, if None is passed, no video is produced
     """
     # video capture input
     cap_input = video
@@ -193,12 +196,6 @@ def kalman(
 
     # open the capture
     cap = cv2.VideoCapture(cap_input)
-
-    # UPDATE EVERY constant
-    """
-    It depicts ervery how many frames the detector will detect the features
-    """
-    UPDATE_EVERY = 10
 
     # set the parameters according to the method selected
     if method == "sift":
@@ -238,6 +235,22 @@ def kalman(
     # assert an exception whenever the return code is zero
     assert ret, "Error in reading the first frame from Video Capture"
 
+    # resize the frame
+    ref_frame = imutils.resize(ref_frame, width=550)
+
+    # whether it is a dry run or not
+    dry = output_video_name is None
+    if not dry:
+        # get the capture data
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        height, width, _ = ref_frame.shape
+        output_video = cv2.VideoWriter(
+            os.path.join(os.path.dirname(os.path.abspath(__file__)), f"../../output/{output_video_name}.avi"),
+            cv2.VideoWriter_fourcc(*'XVID'),
+            fps,
+            (height, width)
+        )
+
     # extract descriptors and keypoints of the current frame
     _, descriptors_to_match = feature_extract(ref_frame, n_features)
 
@@ -246,14 +259,14 @@ def kalman(
 
     # Instantiate the Kalman Filter
     kalman = KalmanTracker(
-        dynamic_params=custom_conf["dynamic_params"],
-        measure_params=custom_conf["measure_params"],
-        control_params=custom_conf["control_params"],
-        A=custom_conf["A"],
-        w=custom_conf["w"],
-        H=custom_conf["H"],
-        v=custom_conf["v"],
-        B=custom_conf["B"],
+        dynamic_params=current_conf["dynamic_params"],
+        measure_params=current_conf["measure_params"],
+        control_params=current_conf["control_params"],
+        A=current_conf["A"],
+        w=current_conf["w"],
+        H=current_conf["H"],
+        v=current_conf["v"],
+        B=current_conf["B"],
     )
 
     # frame_counter
@@ -265,7 +278,8 @@ def kalman(
         # read the frame
         ret, frame = cap.read()
         # assert an exception whenever the return code is zero
-        assert ret, "Error in reading the frame from Video Capture"
+        if not ret:
+            break
 
         # Since it may be too big, but keeping the aspect ratio the same
         frame = imutils.resize(frame, width=550)
@@ -295,10 +309,14 @@ def kalman(
             kalman_keypoints.append(cv2.KeyPoint(new_x, new_y, 1))
 
         # show the matches frame
+        updated_frame = draw_features_keypoints(image=frame, keypoints=kalman_keypoints)
         cv2.imshow(
-            f"Kalman + {method} object tracking",
-            draw_features_keypoints(image=frame, keypoints=kalman_keypoints),
+            f"Kalman + {method} feature tracking",
+            updated_frame
         )
+
+        if not dry:
+            output_video.write(updated_frame)
 
         # exit when q is pressed
         if cv2.waitKey(1) == ord("q"):
@@ -311,5 +329,7 @@ def kalman(
         frame_counter += 1
 
     # Close windows
+    if not dry:
+        output_video.release()
     cap.release()
     cv2.destroyAllWindows()

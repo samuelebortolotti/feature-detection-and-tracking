@@ -126,19 +126,19 @@ def configure_subparsers(subparsers: Subparser) -> None:
         help="Which feature to use in order to perform the matching",
     )
     parser.add_argument(
-        "--nfeatures", "-NF", type=int, default=100, help="Number of features to retain"
+        "--n-features", "-NF", type=int, default=100, help="Number of features to retain"
     )
     parser.add_argument(
         "--flann", "-F", action="store_true", help="Use the FLANN matcher"
     )
     parser.add_argument(
-        "--matchingdist", "-MD", type=int, default=150, help="Matching distance"
+        "--matching-distance", "-MD", type=int, default=150, help="Matching distance"
     )
     parser.add_argument(
         "--video", "-V", type=str, help="Video on which to run the Kalman filter"
     )
     parser.add_argument(
-        "--frameupdate",
+        "--frame-update",
         "-FU",
         type=int,
         default=50,
@@ -170,9 +170,9 @@ def main(args: Namespace) -> None:
         camera_index=args.camera,
         video=args.video,
         method=args.method,
-        n_features=args.nfeatures,
-        matching_distance=args.matchingdist,
-        update_every_n_frame=args.frameupdate,
+        n_features=args.n_features,
+        matching_distance=args.matching_distance,
+        update_every_n_frame=args.frame_update,
         flann=args.flann,
     )
 

@@ -16,22 +16,27 @@ PIP := pip
 # ======= SIFT =====================
 SIFT := sift 
 SIFT_IMAGE := material/test/calchera.jpg
-SIFT_FLAGS := --nfeatures 150
+SIFT_FLAGS := --n-features 150
 
 # ======= ORB ======================
 ORB := orb 
 ORB_IMAGE := material/test/calchera.jpg
-ORB_FLAGS := --nfeatures 150
+ORB_FLAGS := --n-features 150
 
 # ======= MATCHER ==================
 MATCHER := matcher
 MATCHER_METHOD := sift
-MATCHER_FLAGS := --nfeatures 150 --flann --matchingdist 60 --video material/Contesto_industriale1.mp4 --frameupdate 30
+MATCHER_FLAGS := --n-features 150 --flann --matching-distance 60 --video material/Contesto_industriale1.mp4 --frame-update 30
 
 # ======= KALMAN ==================
 KALMAN := kalman
 KALMAN_METHOD := orb
-KALMAN_FLAGS := --nfeatures 150 --flann --matchingdist 60 --video material/Contesto_industriale1.mp4 --frameupdate 30
+KALMAN_FLAGS := --n-features 100 --flann --matching-distance 60 --video material/Contesto_industriale1.mp4 --frame-update 50
+
+# ======= KALMAN ==================
+LUCAS_KANADE := lucas-kanade
+LUCAS_KANADE_METHOD := sift
+LUCAS_KANADE_FLAGS := --n-features 100 --video material/Contesto_industriale1.mp4 --frame-update 50
 
 # ======= FORMAT ===================
 FORMAT := black
@@ -99,7 +104,7 @@ OPEN := xdg-open
 SED := sed
 	
 # RULES
-.PHONY: help env install install-dev sift, orb, matcher, kalman, doc doc-layout open-doc format-code
+.PHONY: help env install install-dev sift orb matcher kalman lucas-kanade doc doc-layout open-doc format-code
 
 help:
 	@$(ECHO) '$(YELLOW)Makefile help$(NONE)'
@@ -110,7 +115,8 @@ help:
 	* sift			: run the SIFT feature detector on the image passed as parameter\n \
 	* orb			: run the ORB feature detector on the image passed as parameter\n \
 	* matcher		: run either the brute force matcher or the FLANN matcher on a video\n \
-	* kalman		: run the kalman filter to track the feature on a video\n \
+	* kalman		: run the Kalman filter to track the feature on a video\n \
+	* lucas-kanade		: run the Lucas-Kanade optical flow to track the feature on a video\n \
 	* doc-layout 		: generates the Sphinx documentation layout\n \
 	* doc 			: generates the documentation (requires an existing documentation layout)\n \
 	* open-doc 		: opens the documentation\n"
@@ -152,6 +158,11 @@ matcher:
 kalman:
 	@$(ECHO) '$(BLUE)Running the feature tracking employing a feature detector and Kalman filters ..$(NONE)'
 	@$(PYTHON) $(PYFLAGS) $(MAIN) $(MAIN_FLAGS) $(KALMAN) $(KALMAN_METHOD) $(KALMAN_FLAGS)
+	@$(ECHO) '$(BLUE)Done$(NONE)
+
+lucas-kanade:
+	@$(ECHO) '$(BLUE)Running the feature tracking employing a feature detector and Lucas-Kanade optical flow ..$(NONE)'
+	@$(PYTHON) $(PYFLAGS) $(MAIN) $(MAIN_FLAGS) $(LUCAS_KANADE) $(LUCAS_KANADE_METHOD) $(LUCAS_KANADE_FLAGS)
 	@$(ECHO) '$(BLUE)Done$(NONE)
 
 doc-layout:

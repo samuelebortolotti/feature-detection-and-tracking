@@ -37,6 +37,7 @@ def get_args() -> Namespace:
     matcher.configure_subparsers(subparsers)
     # configure trackers subparsers
     trackers.kalman.configure_subparsers(subparsers)
+    trackers.lucas_kanade.configure_subparsers(subparsers)
 
     # open cv camera
     parser.add_argument(

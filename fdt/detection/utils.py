@@ -17,7 +17,11 @@ def draw_features_keypoints(image: np.ndarray, keypoints: np.ndarray) -> np.ndar
     """
     # Include the Keypoints
     img_kp = cv2.drawKeypoints(
-        image, keypoints, image, flags=0  # cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS,
+        image,
+        keypoints,
+        image,
+        color=(0, 0, 255),
+        flags=cv2.DRAW_MATCHES_FLAGS_DEFAULT,
     )
 
     return img_kp

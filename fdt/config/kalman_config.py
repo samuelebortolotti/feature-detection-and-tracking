@@ -8,25 +8,23 @@ import numpy as np
   B (np.ndarray): additional and optional control input
 """
 
-# Configuration which I am modeling right now
-# Trying to complexify the transition matrix A since
-# the tracking is hard in the video I have shown.
-custom_conf = {
+# Configuration which is running at the moment
+current_conf = {
     "dynamic_params": 6,
     "measure_params": 2,
     "control_params": 0,
     "A": np.array(
         [
-            [1, 0, 0, 0, 1, 0],
-            [0, 1, 0, 0, 0, 1],
-            [0, 0, 1, 0, 0, 0],
-            [0, 0, 0, 1, 0, 0],
+            [1, 0, 1, 0, 0.5, 0],
+            [0, 1, 0, 1, 0, 0.5],
+            [0, 0, 1, 0, 1, 0],
+            [0, 0, 0, 1, 0, 1],
             [0, 0, 0, 0, 1, 0],
             [0, 0, 0, 0, 0, 1],
         ],
         np.float32,
     ),
-    "w": np.eye(6, dtype=np.float32) * 0.02,
+    "w": np.eye(6, dtype=np.float32) * 0.003,
     "H": np.array(
         [
             [1, 0, 0, 0, 0, 0],
@@ -34,12 +32,12 @@ custom_conf = {
         ],
         dtype=np.float32,
     ),
-    "v": np.eye(2, dtype=np.float32) * 0.02,
+    "v": np.eye(2, dtype=np.float32) * 0.003,
     "B": None,
 }
 
 # Coniguration we have used in class
-old_custom_conf = {
+custom_conf = {
     "dynamic_params": 4,
     "measure_params": 2,
     "control_params": 0,

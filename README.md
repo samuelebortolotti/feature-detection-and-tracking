@@ -97,10 +97,10 @@ cd docs; make html
 To run the [SIFT](https://en.wikipedia.org/wiki/Scale-invariant_feature_transform) feature detector on an image you can type:
 
 ```bash
-python -m fdt sift path_to_image [--nfeatures 100]
+python -m fdt sift path_to_image [--n-features 100]
 ```
 
-where `path_to_image` is the path to the image you want to process with the SIFT algorithm and `--nfeatures` refers to the number of features you want to obtain from the detection phase.
+where `path_to_image` is the path to the image you want to process with the SIFT algorithm and `--n-features` refers to the number of features you want to obtain from the detection phase.
 
 As output, the algorithm will plot the original image with the SIFT keypoint drawn on top of it.
 
@@ -115,10 +115,10 @@ make sift
 To run the [ORB](https://en.wikipedia.org/wiki/Oriented_FAST_and_rotated_BRIEF) feature detector on an image you can type:
 
 ```bash
-python -m fdt orb path_to_image [--nfeatures 100]
+python -m fdt orb path_to_image [--n-features 100]
 ```
 
-where `path_to_image` is the path to the image you want to process with the ORB algorithm and `--nfeatures` refers to the number of features you want to obtain from the detection phase.
+where `path_to_image` is the path to the image you want to process with the ORB algorithm and `--n-features` refers to the number of features you want to obtain from the detection phase.
 
 As output, the algorithm will plot the original image with the ORB keypoint drawn on top of it.
 
@@ -131,7 +131,7 @@ make orb
 ### 5. Run the feature matching
 
 ```bash
-python -m fdt matcher matcher_method [--nfeatures 100 --flann --matchingdist 60 --video material/Contesto_industriale1.mp4 --frameupdate 30]
+python -m fdt matcher matcher_method [--n-features 100 --flann --matching-distance 60 --video material/Contesto_industriale1.mp4 --frame-update 30]
 ```
 
 Alternatively, you can obtain the same result in a less verbose manner by tuning the flags in the `Makefile` and then run:
@@ -140,14 +140,78 @@ Alternatively, you can obtain the same result in a less verbose manner by tuning
 make matcher
 ```
 
-### 6. Run the feature detection with a tracking algorithm
+### 6a. Run the feature detection with a the Kalman filter as tracking algorithm
 
 ```bash
-python -m fdt kalman matcher_method [--nfeatures 100 --flann --matchingdist 60 --video material/Contesto_industriale1.mp4 --frameupdate 30]
+python -m fdt kalman matcher_method [--n-features 100 --flann --matching-distance 60 --video material/Contesto_industriale1.mp4 --frame-update 30 --output-video-name videoname]
 ```
+
+If `output-video-name` is passed, then the program saves the video in `avi` format in the `output` folder.
 
 Alternatively, you can obtain the same result in a less verbose manner by tuning the flags in the `Makefile` and then run:
 
 ```bash
 make kalman
 ```
+
+You can customise the Kalman filter matrices by modifying the `current_conf` Python dictionary in the `fdt/config/kalman_config.py` file.
+
+The current configuration is depicted here:
+
+```python
+import numpy as np
+
+"""Legend:
+  A (np.ndarray): state transition matrix
+  w (np.ndarray): process noise
+  H (np.ndarray): measurement matrix
+  v (np.ndarray): measurement noise
+  B (np.ndarray): additional and optional control input
+"""
+
+# Configuration which is running at the moment
+current_conf = {
+    "dynamic_params": 6,
+    "measure_params": 2,
+    "control_params": 0,
+    "A": np.array(
+        [
+            [1, 0, 1, 0, 0.5, 0],
+            [0, 1, 0, 1, 0, 0.5],
+            [0, 0, 1, 0, 1, 0],
+            [0, 0, 0, 1, 0, 1],
+            [0, 0, 0, 0, 1, 0],
+            [0, 0, 0, 0, 0, 1],
+        ],
+        np.float32,
+    ),
+    "w": np.eye(6, dtype=np.float32) * 0.003,
+    "H": np.array(
+        [
+            [1, 0, 0, 0, 0, 0],
+            [0, 1, 0, 0, 0, 0],
+        ],
+        dtype=np.float32,
+    ),
+    "v": np.eye(2, dtype=np.float32) * 0.003,
+    "B": None,
+}
+```
+
+> **Note:** if the program raises an error when the name of the output video is passed, it is possible that it is an issue with CODECS, thus consider changing the ``cv2.VideoWriter_fourcc(..)` line in the code.
+
+### 6b. Run the feature detection with a the Kalman filter as tracking algorithm
+
+```bash
+python -m fdt lukas-kanade matcher_method [--nfeatures 100 --video material/Contesto_industriale1.mp4 --frameupdate 30]
+```
+
+If `output-video-name` is passed, then the program saves the video in `avi` format in the `output` folder.
+
+Alternatively, you can obtain the same result in a less verbose manner by tuning the flags in the `Makefile` and then run:
+
+```bash
+make lukas-kanade
+```
+
+> **Note:** if the program raises an error when the name of the output video is passed, it is possible that it is an issue with CODECS, thus consider changing the ``cv2.VideoWriter_fourcc(..)` line in the code.
