@@ -65,7 +65,11 @@ def configure_subparsers(subparsers: Subparser) -> None:
         help="Which feature detector to employ",
     )
     parser.add_argument(
-        "--n-features", "-NF", type=int, default=100, help="Number of features to retain"
+        "--n-features",
+        "-NF",
+        type=int,
+        default=100,
+        help="Number of features to retain",
     )
     parser.add_argument(
         "--video",
@@ -80,9 +84,7 @@ def configure_subparsers(subparsers: Subparser) -> None:
         default=50,
         help="After how many frames to recalibrate",
     )
-    parser.add_argument(
-        "--output-video-name", "-O", type=str, help="Output video name"
-    )
+    parser.add_argument("--output-video-name", "-O", type=str, help="Output video name")
     # set the main function to run when Kalman is called from the command line
     parser.set_defaults(func=main)
 
@@ -110,7 +112,7 @@ def main(args: Namespace) -> None:
         method=args.method,
         n_features=args.n_features,
         update_every_n_frame=args.frame_update,
-        output_video_name=args.output_video_name
+        output_video_name=args.output_video_name,
     )
 
 
@@ -120,7 +122,7 @@ def lucas_kanade(
     method: str,
     n_features: int,
     update_every_n_frame: int,
-    output_video_name: str
+    output_video_name: str,
 ) -> None:
     """Apply the Lucas Kanade Optical flow to track the features in the scene
 
@@ -165,10 +167,13 @@ def lucas_kanade(
         height, width, _ = ref_frame.shape
         print(height, width)
         output_video = cv2.VideoWriter(
-            os.path.join(os.path.dirname(os.path.abspath(__file__)), f"../../output/{output_video_name}.avi"),
-            cv2.VideoWriter_fourcc(*'XVID'),
+            os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                f"../../output/{output_video_name}.avi",
+            ),
+            cv2.VideoWriter_fourcc(*"XVID"),
             fps,
-            (height, width)
+            (height, width),
         )
 
     # extract descriptors and keypoints of the current frame
@@ -207,17 +212,16 @@ def lucas_kanade(
             )
 
         updated_frame = draw_lk_keypoints(
-                frame=frame.copy(),
-                lk_features=keypoints_to_track,
-                radius=5,
-                color=(0, 0, 255),
-                thickness=2,
-                line_type=cv2.FILLED,
-            )
+            frame=frame.copy(),
+            lk_features=keypoints_to_track,
+            radius=5,
+            color=(0, 0, 255),
+            thickness=2,
+            line_type=cv2.FILLED,
+        )
         # draw the Lucas-Kanade Optical Flow feature tracking
         cv2.imshow(
-            f"Lucas-Kanade optical flow + {method} feature tracking",
-            updated_frame
+            f"Lucas-Kanade optical flow + {method} feature tracking", updated_frame
         )
 
         if not dry:

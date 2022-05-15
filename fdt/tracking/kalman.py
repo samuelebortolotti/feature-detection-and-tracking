@@ -113,7 +113,11 @@ def configure_subparsers(subparsers: Subparser) -> None:
         help="Which feature detector to employ",
     )
     parser.add_argument(
-        "--n-features", "-NF", type=int, default=100, help="Number of features to retain"
+        "--n-features",
+        "-NF",
+        type=int,
+        default=100,
+        help="Number of features to retain",
     )
     parser.add_argument(
         "--video", "-V", type=str, help="Video on which to run the Kalman filter"
@@ -131,9 +135,7 @@ def configure_subparsers(subparsers: Subparser) -> None:
         default=50,
         help="After how many frames to recalibrate",
     )
-    parser.add_argument(
-        "--output-video-name", "-O", type=str, help="Output video name"
-    )
+    parser.add_argument("--output-video-name", "-O", type=str, help="Output video name")
     # set the main function to run when Kalman is called from the command line
     parser.set_defaults(func=main)
 
@@ -163,7 +165,7 @@ def main(args: Namespace) -> None:
         matching_distance=args.matching_distance,
         update_every_n_frame=args.frame_update,
         flann=args.flann,
-        output_video_name=args.output_video_name
+        output_video_name=args.output_video_name,
     )
 
 
@@ -175,7 +177,7 @@ def kalman(
     matching_distance: int,
     update_every_n_frame: int,
     flann: bool,
-    output_video_name: str
+    output_video_name: str,
 ) -> None:
     """Apply the Kalman filter to track the object in the scene
 
@@ -245,10 +247,13 @@ def kalman(
         fps = cap.get(cv2.CAP_PROP_FPS)
         height, width, _ = ref_frame.shape
         output_video = cv2.VideoWriter(
-            os.path.join(os.path.dirname(os.path.abspath(__file__)), f"../../output/{output_video_name}.avi"),
-            cv2.VideoWriter_fourcc(*'XVID'),
+            os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                f"../../output/{output_video_name}.avi",
+            ),
+            cv2.VideoWriter_fourcc(*"XVID"),
             fps,
-            (height, width)
+            (height, width),
         )
 
     # extract descriptors and keypoints of the current frame
@@ -310,10 +315,7 @@ def kalman(
 
         # show the matches frame
         updated_frame = draw_features_keypoints(image=frame, keypoints=kalman_keypoints)
-        cv2.imshow(
-            f"Kalman + {method} feature tracking",
-            updated_frame
-        )
+        cv2.imshow(f"Kalman + {method} feature tracking", updated_frame)
 
         if not dry:
             output_video.write(updated_frame)

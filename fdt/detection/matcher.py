@@ -126,7 +126,11 @@ def configure_subparsers(subparsers: Subparser) -> None:
         help="Which feature to use in order to perform the matching",
     )
     parser.add_argument(
-        "--n-features", "-NF", type=int, default=100, help="Number of features to retain"
+        "--n-features",
+        "-NF",
+        type=int,
+        default=100,
+        help="Number of features to retain",
     )
     parser.add_argument(
         "--flann", "-F", action="store_true", help="Use the FLANN matcher"

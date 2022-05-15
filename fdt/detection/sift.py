@@ -28,7 +28,11 @@ def configure_subparsers(subparsers: Subparser) -> None:
         "image", type=str, help="Image path on which to run the SIFT feature detector"
     )
     parser.add_argument(
-        "--n-features", "-NF", type=int, default=500, help="Number of features to retain"
+        "--n-features",
+        "-NF",
+        type=int,
+        default=500,
+        help="Number of features to retain",
     )
     # set the main function to run when SIFT is called from the command line
     parser.set_defaults(func=main)
