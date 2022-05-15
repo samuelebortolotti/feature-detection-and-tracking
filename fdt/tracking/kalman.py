@@ -252,8 +252,8 @@ def kalman(
                 f"../../output/{output_video_name}.avi",
             ),
             cv2.VideoWriter_fourcc(*"XVID"),
-            fps,
-            (height, width),
+            24,
+            (width, height),
         )
 
     # extract descriptors and keypoints of the current frame

@@ -165,7 +165,6 @@ def lucas_kanade(
         # get the capture data
         fps = cap.get(cv2.CAP_PROP_FPS)
         height, width, _ = ref_frame.shape
-        print(height, width)
         output_video = cv2.VideoWriter(
             os.path.join(
                 os.path.dirname(os.path.abspath(__file__)),
@@ -173,7 +172,7 @@ def lucas_kanade(
             ),
             cv2.VideoWriter_fourcc(*"XVID"),
             fps,
-            (height, width),
+            (width, height),
         )
 
     # extract descriptors and keypoints of the current frame
@@ -219,6 +218,7 @@ def lucas_kanade(
             thickness=2,
             line_type=cv2.FILLED,
         )
+
         # draw the Lucas-Kanade Optical Flow feature tracking
         cv2.imshow(
             f"Lucas-Kanade optical flow + {method} feature tracking", updated_frame
