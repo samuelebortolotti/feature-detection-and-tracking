@@ -33,6 +33,7 @@ def get_args() -> Namespace:
     # configure detector subparsers
     detectors.sift.configure_subparsers(subparsers)
     detectors.orb.configure_subparsers(subparsers)
+    detectors.harris.configure_subparsers(subparsers)
     # configure matcher subparser
     matcher.configure_subparsers(subparsers)
     # configure trackers subparsers
