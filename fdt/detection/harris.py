@@ -26,6 +26,7 @@ def configure_subparsers(subparsers: Subparser) -> None:
       k-size (int): aperture parameter of the Sobel derivative used [default: 3]
       k (float): Harris detector free parameter in the equation [default 0.04]
       thresh (float): Harris detector good point threshold (the selected points are harris*thres) [default: 0.5]
+      config-file (bool): use the automatic configuration, provided in the `config` folder for the non-specified arguments
     """
     parser = subparsers.add_parser("harris", help="Harris corner detector")
     parser.add_argument(
@@ -109,24 +110,32 @@ def main(args: Namespace) -> None:
     plot_image(harris_img, f"Harris descriptors {os.path.basename(args.image)}")
 
 
-def load_params(block_size: int, k_size: int, k: float, tresh: float, conf_file: bool):
-    """TODO
+def load_params(block_size: int, k_size: int, k: float, tresh: float, conf_file: bool) -> Tuple[int, int, float, float]:
+    """Loads the parameters from the `config` file if they are not provided and the config_file flag is
+    specified
 
     Args:
-      frame (np.ndarray): frame [BGR]
+      block_size (int): the size of neighbourhood considered for corner detection
+      k_size (int): aperture parameter of the Sobel derivative used
+      k (float): Harris detector free parameter in the equation
+      thresh (float): Harris detector good point threshold (the selected points are harris*thres)
+      conf_file (bool): use the automatic configuration, provided in the `config` folder for the non-specified arguments
 
     Returns:
-      Tuple[np.ndarray, np.ndarray]: Harris keypoints and descriptors of the frame
+      Tuple[int, int, float, float]: respectively Harris block size, k size, k and treshold multiplier
     """
     # if the file is not set then it makes no sense to load anything
     if not conf_file:
         return block_size, k_size, k, tresh
+
+    # set the configuration data
     block_size_l = (
         config.current_conf["block_size"] if block_size is None else block_size
     )
     k_size_l = config.current_conf["k_size"] if k_size is None else k_size
     k_l = config.current_conf["k"] if k is None else k
     tresh_l = config.current_conf["tresh"] if tresh is None else tresh
+
     # override the configuration with those loaded
     return block_size_l, k_size_l, k_l, tresh_l
 
@@ -138,14 +147,19 @@ def harris(
     k: float,
     tresh: float,
     config_file=bool,
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> Tuple[cv2.KeyPoint, np.ndarray]:
     """Apply the Harris corner detector on a frame
 
     Args:
-      frame (np.ndarray): frame [BGR]
+      block_size (int): the size of neighbourhood considered for corner detection
+      k_size (int): aperture parameter of the Sobel derivative used
+      k (float): Harris detector free parameter in the equation
+      thresh (float): Harris detector good point threshold (the selected points are harris*thres)
+      config_file (bool): use the automatic configuration, provided in the `config` folder for the non-specified arguments
 
     Returns:
-      Tuple[np.ndarray, np.ndarray]: Harris keypoints and descriptors of the frame
+      Tuple[cv2.KeyPoint, np.ndarray]: Harris keypoints and descriptors of the frame [**Note**, the Harris corner detector has no
+      descriptor, thus None is returned. This is done for compatibility reasons with other feature extractors]
     """
 
     # load parameters
@@ -159,15 +173,14 @@ def harris(
     # run the Harris corner detector
     harris = cv2.cornerHarris(frame_gray, block_size, k_size, k)
 
-    # I will use the dilate method to mark the corners in the returned image.
-    # Basically, it adds pixels to the corners of objects in an image
+    # dilate method to mark the corners in the returned image, basically, it adds pixels to the corners
     harris = cv2.dilate(harris, None)
 
-    # Threshold for an optimal value, it may vary depending on the image.
+    # threshold for the optimal corners, it may vary depending on the image.
     keypoints = np.argwhere(harris > tresh * harris.max())
 
-    # convert numpy keypoints into opencv KeyPoints
+    # convert numpy.ndarray points into opencv KeyPoints
     keypoints = [cv2.KeyPoint(int(k[1]), int(k[0]), 1) for k in keypoints]
 
-    # return keypoints
+    # return keypoints and not existing descriptors
     return keypoints, None

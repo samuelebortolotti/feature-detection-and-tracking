@@ -128,6 +128,14 @@ Alternatively, you can obtain the same result in a less verbose manner by tuning
 make orb
 ```
 
+### 5. Run the Harris corner detector
+
+TODO
+
+### 5. Run the Simple Blob detector
+
+TODO
+
 ### 5. Run the feature matching
 
 ```bash
@@ -146,7 +154,10 @@ make matcher
 python -m fdt kalman matcher_method [--n-features 100 --flann --matching-distance 60 --video material/Contesto_industriale1.mp4 --frame-update 30 --output-video-name videoname]
 ```
 
-If `output-video-name` is passed, then the program saves the video in `avi` format in the `output` folder.
+If `output-video-name` is passed, then the program saves the video in [AVI](https://it.wikipedia.org/wiki/Audio_Video_Interleave) format in the `output` folder.
+For generating the video [XVID](https://www.xvid.com/) codec is employed. 
+Therefore, if you want to precisely follow the code you may need to install it unless you already have it. 
+Otherwise, feel free to change it or suggest me a better alternative.
 
 Alternatively, you can obtain the same result in a less verbose manner by tuning the flags in the `Makefile` and then run:
 
@@ -206,7 +217,10 @@ current_conf = {
 python -m fdt lukas-kanade matcher_method [--nfeatures 100 --video material/Contesto_industriale1.mp4 --frameupdate 30]
 ```
 
-If `output-video-name` is passed, then the program saves the video in `avi` format in the `output` folder.
+If `output-video-name` is passed, then the program saves the video in [AVI](https://it.wikipedia.org/wiki/Audio_Video_Interleave) format in the `output` folder.
+For generating the video [XVID](https://www.xvid.com/) codec is employed. 
+Therefore, if you want to precisely follow the code you may need to install it unless you already have it. 
+Otherwise, feel free to change it or suggest me a better alternative.
 
 Alternatively, you can obtain the same result in a less verbose manner by tuning the flags in the `Makefile` and then run:
 

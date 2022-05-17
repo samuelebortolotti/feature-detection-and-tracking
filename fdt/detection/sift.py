@@ -21,7 +21,7 @@ def configure_subparsers(subparsers: Subparser) -> None:
     Subparser parameters
     Args:
       image (str): image path
-      nfeatures (int) [Optional]: number of features to retain [default = 500]
+      n-features (int): number of features to retain [default = 500]
     """
     parser = subparsers.add_parser("sift", help="SIFT feature detector")
     parser.add_argument(
@@ -62,7 +62,7 @@ def main(args: Namespace) -> None:
     image_bgr = cv2.imread(args.image, cv2.IMREAD_COLOR)
 
     # call the SIFT algorithm
-    sift_kp, sift_desc = sift(frame=image_bgr, n_features=args.n_features)
+    sift_kp, _ = sift(frame=image_bgr, n_features=args.n_features)
 
     # draw the keypoints
     sift_image = draw_features_keypoints(image_bgr, sift_kp)
@@ -71,11 +71,12 @@ def main(args: Namespace) -> None:
     plot_image(sift_image, f"SIFT descriptors {os.path.basename(args.image)}")
 
 
-def sift(frame: np.ndarray, n_features: int) -> Tuple[np.ndarray, np.ndarray]:
+def sift(frame: np.ndarray, n_features: int) -> Tuple[cv2.KeyPoint, np.ndarray]:
     """Apply the SIFT feature detector on a frame
 
     Args:
       frame (np.ndarray): frame [BGR]
+      n-features (int): number of features to retain
 
     Returns:
       Tuple[np.ndarray, np.ndarray]: SIFT keypoints and descriptors of the frame

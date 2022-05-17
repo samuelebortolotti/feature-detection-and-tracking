@@ -7,13 +7,14 @@ from typing import Tuple
 
 
 def draw_features_keypoints(
-    image: np.ndarray, keypoints: np.ndarray, color: Tuple[int, int, int] = (0, 0, 255)
+        image: np.ndarray, keypoints: cv2.KeyPoint, color: Tuple[int, int, int] = (0, 0, 255)
 ) -> np.ndarray:
     r"""Draw the feature keypoints on the image passed
 
     Args:
       image (np.ndarray): image [BGR]
-      keypoints (np.ndarray): features keypoints
+      keypoints (cv2.KeyPoint): features keypoints
+      color (Tuple[int, int, int]): color of the keypoints [default = (0, 0, 255)]
 
     Returns:
       np.ndarray: image with the descriptors highlighted on top of it

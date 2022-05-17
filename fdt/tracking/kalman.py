@@ -37,6 +37,9 @@ class KalmanTracker:
         """Creates a Kalman Filter wrapper.
 
         Args:
+          dynamic_params (int): number of dynamic parameters
+          measure_params (int): number of measurement parameters
+          control_params (int): additional input control parameters
           A (np.ndarray): state transition matrix
           w (np.ndarray): process noise
           H (np.ndarray): measurement matrix
@@ -65,7 +68,9 @@ class KalmanTracker:
         self.kalman.controlMatrix = B
 
     def predict_next_position(self, x: np.float32, y: np.float32) -> Tuple[int, int]:
-        """Function which predicts the next position using the Kalman filter equation
+        """Function which predicts the next position using the Kalman filter equation.
+        Moreover, this function corrects the prediction of the Kalman filter using the
+        previous positions which are used as observations.
 
         Args:
           x (np.ndarray): x coordinate of the current measurement
@@ -189,7 +194,7 @@ def kalman(
       matching_distance (int): matching distance for the matcher
       update_every_n_frame (int): after how many frame to recalibrate the features
       flann (bool): whether to use the flann based matcher
-      output-video-name (str): file name of the video to produce, if None is passed, no video is produced
+      output_video_name (str): file name of the video to produce, if None is passed, no video is produced
     """
     # video capture input
     cap_input = video
@@ -219,10 +224,10 @@ def kalman(
         # feature parameters for the FLANN matcher
         feature_index_params = dict(
             algorithm=FLANN_INDEX_LSH,
-            table_number=6,  # 12
-            key_size=12,  # 20
+            table_number=6,
+            key_size=12,
             multi_probe_level=1,
-        )  # 2
+        )
 
     if not flann:
         # Brute force point matcher, thanks to the crossCheck only the consistent pairs are returned
@@ -242,17 +247,18 @@ def kalman(
 
     # whether it is a dry run or not
     dry = output_video_name is None
+    # with dry I mean without saving an output
     if not dry:
-        # get the capture data
+        # get the capture data, namely (fps, height, width)
         fps = cap.get(cv2.CAP_PROP_FPS)
         height, width, _ = ref_frame.shape
         output_video = cv2.VideoWriter(
             os.path.join(
                 os.path.dirname(os.path.abspath(__file__)),
-                f"../../output/{output_video_name}.avi",
+                f"../../output/{output_video_name}.avi", # the produced video is in AVI format
             ),
-            cv2.VideoWriter_fourcc(*"XVID"),
-            24,
+            cv2.VideoWriter_fourcc(*"XVID"), # the employed codec are XVID.
+            fps,
             (width, height),
         )
 
@@ -317,6 +323,7 @@ def kalman(
         updated_frame = draw_features_keypoints(image=frame, keypoints=kalman_keypoints)
         cv2.imshow(f"Kalman + {method} feature tracking", updated_frame)
 
+        # write a frame on the video
         if not dry:
             output_video.write(updated_frame)
 

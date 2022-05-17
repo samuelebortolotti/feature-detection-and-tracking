@@ -12,6 +12,7 @@ def plot_image(image: np.ndarray, title: str) -> None:
       image (np.ndarray): image to display
       title (str): title of the image
     """
+    # > Note: cv2 threats the images as BGR by default, however, matplotlib assumes they are in RBG
     plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
     plt.axis("off")
     plt.title(title)

@@ -8,7 +8,7 @@ from fdt.detection.utils import draw_features_keypoints
 from fdt.plotter import plot_image
 import numpy as np
 import os
-from typing import Tuple, Optional
+from typing import Any, Dict, Tuple
 
 
 def configure_subparsers(subparsers: Subparser) -> None:
@@ -22,87 +22,163 @@ def configure_subparsers(subparsers: Subparser) -> None:
     Subparser parameters
     Args:
       image (str): image path
+      filterByColor (bool): wether to consider a specific colour as feature [default = False], since it is set to "false", then it finds bright and dark blobs, both.
+      blobColor (int): blob colour, basically images are converted to many binary b/w layers. Then 0 searches for dark blobs, 255 searches for bright blobs. [default = 0]
+      filterByArea (bool): Extracted blobs have an area between minArea (inclusive) and maxArea (exclusive) [default = True]
+      minArea (float): min area of the blob to look for. Notice, this is highly depending on image resolution and dice size [default = 3.0]
+      maxArea (float): maximum area of the blob to look for. Highly depending on image resolution. [default = 400.0]
+      filterByCircularity (bool): whether to filter by the circluarity shape of the objects in the scene [default = True]
+      minCircularity (float): 0 is rectangular, 1 is round. Not set because the dots are not always round when they are damaged, for example. [default = 0.0]
+      maxCircularity (float): max circularity default [default = 3.40282346638b52886e38], in this case it has been set to infinity somehow.
+      filterByConvexity (bool): whether to filter by convexity [default =  False]
+      minConvexity (float): min convexity [default = 0.0]
+      maxConvexity (float): max convexity [default = 3.4028234663852886e38], once again this is basically infinity
+      filterByInertia (bool): basically a second way to find round blobs [default = True]
+      minInertiaRatio (float): minimum ineria ratio, where 1 is round and 0 is basically everything [default = 0.55]
+      maxInertiaRatio (float): maximum inertia ratio [default = 3.4028234663852886e38], basically it is infinity once again
+      minThreshold (float): from where to start filtering the image [default = 0.0]
+      maxThreshold (float): where to end filtering the image [default = 255.0]
+      thresholdStep (int): steps to perform [default = 5]
+      minDistBetweenBlobs (float): a distance used in order to avoid overlapping blobs, must be bigger than 0 for obvious reasons [default = 3.0]
+      minRepeatability (float): if the same blob center is found at different threshold values (within a minDistBetweenBlobs), then it increases a counter for that blob.
+      if the counter for each blob is >: minRepeatability, then it's a stable blob, and produces a KeyPoint, otherwise the blob is discarded [default = 2]
     """
     parser = subparsers.add_parser("blob", help="Simple blob detector")
     parser.add_argument(
         "image", type=str, help="Image path on which to run the Simple Blob detector"
     )
     parser.add_argument(
+        "--filter-by-color",
+        "-FBCO",
+        type=bool,
+        default=False,
+        help="Wether to consider a specific colour"
+    )
+    parser.add_argument(
         "--blob-color",
         "-BC",
         type=int,
+        default=0,
+        help="Specific color to consider when filtering by color"
     )
     parser.add_argument(
         "--filter-by-area",
         "-FBA",
         type=bool,
+        default=True,
+        help="Whether to filter by area"
     )
     parser.add_argument(
         "--min-area",
         "-MIA",
         type=float,
+        default=3.0,
+        help="Min area to consider when filtering by area"
     )
     parser.add_argument(
         "--max-area",
         "-MXA",
         type=float,
+        default=400.0,
+        help="Max area to consider when filtering by area"
     )
     parser.add_argument(
         "--filter-by-circularity",
         "-FBC",
         type=bool,
+        default=True,
+        help="Whether to filter by circularity"
     )
     parser.add_argument(
-        "--min-circularity" "-MIC",
+        "--min-circularity",
+        "-MIC",
         type=float,
+        default=0.0,
+        help="Min circularity to consider when filtering by circularity"
     )
     parser.add_argument(
-        "--max-circularity" "-MXC",
+        "--max-circularity",
+        "-MXC",
         type=float,
+        default=3.4028234663852886e38,
+        help="Max circularity to consider when filtering by circularity"
     )
     parser.add_argument(
-        "--filter-by-convexity" "-FBX",
+        "--filter-by-convexity",
+        "-FBX",
         type=bool,
+        default=False,
+        help="Whether to filter by convexity"
     )
     parser.add_argument(
-        "--min-convexity" "-MIX",
+        "--min-convexity",
+        "-MIX",
         type=float,
+        default=0.0,
+        help="Min convexity to consider when filtering by convexity"
     )
     parser.add_argument(
-        "--max-convexity" "-MXX",
+        "--max-convexity",
+        "-MXX",
         type=float,
+        default=3.4028234663852886e38,
+        help="Max convexity to consider when filtering by convexity"
     )
     parser.add_argument(
-        "--filter-by-inertia" "-MXX",
+        "--filter-by-inertia",
+        "-FBI",
         type=bool,
+        default=True,
+        help="Whether to filter by inertia"
     )
     parser.add_argument(
-        "--min-inertia" "-MII",
+        "--min-inertia",
+        "-MII",
         type=float,
+        default=0.55,
+        help="Min inertia to consider when filtering by inertia"
     )
     parser.add_argument(
-        "--max-inertia" "-MXI",
+        "--max-inertia",
+        "-MXI",
         type=float,
+        default=3.4028234663852886e38,
+        help="Max inertia to consider when filtering by inertia"
     )
     parser.add_argument(
-        "--min-threshold" "-MIT",
+        "--min-threshold",
+        "-MIT",
         type=float,
+        default=0.0,
+        help="Min treshold to consider when filtering"
     )
     parser.add_argument(
-        "--max-threshold" "-MXT",
+        "--max-threshold",
+        "-MXT",
         type=float,
+        default=255.0,
+        help="Max treshold to consider when filtering"
     )
     parser.add_argument(
-        "--threshold-step" "-TS",
+        "--threshold-step",
+        "-TS",
         type=int,
+        default=5,
+        help="Step to perform"
     )
     parser.add_argument(
-        "--min-dist-between-blobs" "-MDBB",
+        "--min-dist-between-blobs",
+        "-MDBB",
         type=float,
+        default=3.0,
+        help="Min distance between blobs"
     )
     parser.add_argument(
-        "--min-repetability" "-MR",
-        type=float,
+        "--min-repeatability",
+        "-MR",
+        type=int,
+        default=2,
+        help="Repeatability for stable keypoints"
     )
     parser.add_argument(
         "--config-file",
@@ -137,28 +213,33 @@ def main(args: Namespace) -> None:
     # read the colored version of the image
     image_bgr = cv2.imread(args.image)
 
-    # call the Blob detector
-    blob_kp = blob(
+    # prepare the blob parameters
+    blob_param_dict = {
+        "filterByColor": args.filter_by_color,
+        "blobColor": args.blob_color,
+        "filterByArea": args.filter_by_area,
+        "minArea": args.min_area,
+        "maxArea": args.max_area,
+        "filterByCircularity": args.filter_by_circularity,
+        "minCircularity": args.min_circularity,
+        "maxCircularity": args.max_circularity,
+        "filterByConvexity": args.filter_by_convexity,
+        "minConvexity": args.min_convexity,
+        "maxConvexity": args.max_convexity,
+        "filterByInertia": args.filter_by_inertia,
+        "minInertiaRatio": args.min_inertia,
+        "maxInertiaRatio": args.max_inertia,
+        "minThreshold": args.min_threshold,
+        "maxThreshold": args.max_threshold,
+        "thresholdStep": args.threshold_step,
+        "minDistBetweenBlobs": args.min_dist_between_blobs,
+        "minRepeatability": args.min_repeatability,
+    }
+
+    # call the blob detector
+    blob_kp, _ = blob(
         frame=image_bgr,
-        filterByColor=args.filter_by_color,
-        blobColor=args.blob_color,
-        filterByArea=args.filter_by_area,
-        minArea=args.min_area,
-        maxArea=args.max_area,
-        filterByCircularity=args.filter_by_circularity,
-        minCircularity=args.min_circularity,
-        maxCircularity=args.max_circularity,
-        filterByConvexity=args.filter_by_convexity,
-        minConvexity=args.min_convexity,
-        maxConvexity=args.max_convexity,
-        filterByInertia=args.filter_by_inertia,
-        minInertiaRatio=args.min_inertia,
-        maxInertiaRatio=args.max_inertia,
-        minThreshold=args.min_threshold,
-        maxThreshold=args.max_treshold,
-        thresholdStep=args.threshold_step,
-        minDistBetweenBlobs=args.min_dist_between_blobs,
-        minRepeatability=args.min_repetability,
+        blob_param_dict=blob_param_dict,
         config_file=args.config_file,
     )
 
@@ -171,135 +252,62 @@ def main(args: Namespace) -> None:
     )
 
 
-def load_blob_params(
-    filterByColor: bool,
-    blobColor: int,
-    filterByArea: bool,
-    minArea: float,
-    maxArea: float,
-    filterByCircularity: bool,
-    minCircularity: float,
-    maxCircularity: float,
-    filterByConvexity: bool,
-    minConvexity: float,
-    maxConvexity: float,
-    filterByInertia: bool,
-    minInertiaRatio: float,
-    maxInertiaRatio: float,
-    minThreshold: float,
-    maxThreshold: float,
-    thresholdStep: int,
-    minDistBetweenBlobs: float,
-    minRepeatability: float,
-    config_file: bool,
-    conf_file: bool,
-):
-    """TODO
+def params_init(attributes: Dict[str, Any]) -> cv2.SimpleBlobDetector_Params:
+    """Initializes the `cv2.SimpleBlobDetector_Params` object.
 
     Args:
-      frame (np.ndarray): frame [BGR]
+      attributes (Dict[str, Any]): dictionary containing the named parameter for the `cv2.SimpleBlobDetector`
+    Returns:
+      cv2.SimpleBlobDetector_Params: parameters for the `cv2.SimpleBlobDetector`
+    """
+    # create the parameter object
+    blob_params = cv2.SimpleBlobDetector_Params()
+    # set the attributes of the SimpleBlobDetector
+    for attribute, value in attributes.items():
+        setattr(blob_params, attribute, value)
+    return blob_params
+
+
+def load_blob_params(blob_param_dict: Dict[str, Any], config_file: bool) -> cv2.SimpleBlobDetector_Params:
+    """Loads the parameters from the `config` file if they are not provided and the config_file flag is
+    specified
+
+    Args:
+      blob_param_dict (Dict[str, Any]): dictionary containing the named parameter for the `cv2.SimpleBlobDetector`
+      conf_file (bool): use the automatic configuration, provided in the `config` folder for the non-specified arguments
 
     Returns:
-      Tuple[np.ndarray, np.ndarray]: Harris keypoints and descriptors of the frame
+      cv2.SimpleBlobDetector_Params: parameters for the `cv2.SimpleBlobDetector`
     """
     # if the file is not set then it makes no sense to load anything
-    if not conf_file:
-        return (
-            filterByColor,
-            blobColor,
-            filterByArea,
-            minArea,
-            maxArea,
-            filterByCircularity,
-            minCircularity,
-            maxCircularity,
-            filterByConvexity,
-            minConvexity,
-            maxConvexity,
-            filterByInertia,
-            minInertiaRatio,
-            maxInertiaRatio,
-            minThreshold,
-            maxThreshold,
-            thresholdStep,
-            minDistBetweenBlobs,
-            minRepeatability
-        )
+    if not config_file:
+        return params_init(attributes=blob_param_dict)
 
-    filterByColor_l = config.current_conf["filterByColor"] if filterByColor is None else filterByColor
-    blobColor_l = config.current_conf["blobColor"] if blobColor is None else blobColor
-    filterByArea_l = config.current_conf["filterByArea"] if filterByArea is None else filterByArea
-    minArea_l = config.current_conf["minArea"] if minArea is None else minArea
-    maxArea_l = config.current_conf["maxArea"] if maxArea is None else maxArea
-    filterByCircularity_l = config.current_conf["filterByCircularity"] if filterByCircularity is None else filterByCircularity
-    minCircularity_l = config.current_conf["minCircularity"] if minCircularity is None else minCircularity
-    maxCircularity_l = config.current_conf["maxCircularity"] if maxCircularity is None else maxCircularity
-    filterByConvexity_l = config.current_conf["filterByConvexity"] if filterByConvexity is None else filterByConvexity
-    minConvexity_l = config.current_conf["minConvexity"] if minConvexity is None else minConvexity
-    maxConvexity_l = config.current_conf["maxConvexity"] if maxConvexity is None else maxConvexity
-    filterByInertia_l = config.current_conf["filterByInertia"] if filterByInertia is None else filterByInertia
-    minInertiaRatio_l = config.current_conf["minInertiaRatio"] if minInertiaRatio is None else minInertiaRatio
-    maxInertiaRatio_l = config.current_conf["maxInertiaRatio"] if maxInertiaRatio is None else maxInertiaRatio
-    minThreshold_l = config.current_conf["minThreshold"] if minThreshold is None else minThreshold
-    maxThreshold_l = config.current_conf["maxThreshold"] if maxThreshold is None else maxThreshold
-    thresholdStep_l = config.current_conf["thresholdStep"] if thresholdStep is None else thresholdStep
-    minDistBetweenBlobs_l = config.current_conf["minDistBetweenBlobs"] if minDistBetweenBlobs is None else minDistBetweenBlobs
-    minRepeatability_l = config.current_conf["minRepeatability"] if minRepeatability is None else minRepeatability
+    # set the parameters
+    for attribute, value in blob_param_dict.items():
+        if value is None:
+            blob_param_dict[attribute] = config.current_conf[attribute]
 
     # override the configuration with those loaded
-    return (
-        filterByColor_l,
-        blobColor_l,
-        filterByArea_l,
-        minArea_l,
-        maxArea_l,
-        filterByCircularity_l,
-        minCircularity_l,
-        maxCircularity_l,
-        filterByConvexity_l,
-        minConvexity_l,
-        maxConvexity_l,
-        filterByInertia_l,
-        minInertiaRatio_l,
-        maxInertiaRatio_l,
-        minThreshold_l,
-        maxThreshold_l,
-        thresholdStep_l,
-        minDistBetweenBlobs_l,
-        minRepeatability_l
-    )
+    return params_init(attributes=blob_param_dict)
 
 
 def blob(
     frame: np.ndarray,
-    filterByColor: bool,
-    blobColor: int,
-    filterByArea: bool,
-    minArea: float,
-    maxArea: float,
-    filterByCircularity: bool,
-    minCircularity: float,
-    maxCircularity: float,
-    filterByConvexity: bool,
-    minConvexity: float,
-    maxConvexity: float,
-    filterByInertia: bool,
-    minInertiaRatio: float,
-    maxInertiaRatio: float,
-    minThreshold: float,
-    maxThreshold: float,
-    thresholdStep: int,
-    minDistBetweenBlobs: float,
-    minRepeatability: float,
+    blob_param_dict: Dict[str, Any],
     config_file: bool,
-) -> Tuple[np.ndarray, np.array]:
+) -> Tuple[cv2.KeyPoint, np.array]:
+
     """Apply the Simple Blob Detector on a frame
 
     Args:
       frame (np.ndarray): frame [BGR]
+      blob_param_dict (Dict[str, Any]): dictionary containing the named parameter for the `cv2.SimpleBlobDetector`
+      conf_file (bool): use the automatic configuration, provided in the `config` folder for the non-specified arguments
 
     Returns:
-      Tuple[np.ndarray, np.ndarray]: Simple Blob keypoints and descriptors of the frame
+      Tuple[cv2.KeyPoint, np.ndarray]: Simple Blob keypoints and descriptors of the frame [**Note**, the Blob feature detector has no
+      descriptor, thus None is returned. This is done for compatibility reasons with other feature extractors]
     """
     # load the frame as grayscale
     frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -307,7 +315,10 @@ def blob(
     # set blob detector parameters
     blob_params = cv2.SimpleBlobDetector_Params()
 
-    load_blob_params(blob_params)
+    # load parameters of the blob detector
+    blob_params = load_blob_params(
+        blob_param_dict=blob_param_dict, config_file=config_file
+    )
 
     # set up the simple blob detector
     blob_detector = cv2.SimpleBlobDetector_create(blob_params)
@@ -315,5 +326,5 @@ def blob(
     # run the simple blob detector
     keypoints = blob_detector.detect(frame_gray)
 
-    # return keypoints
+    # return keypoints and not existing descriptors
     return keypoints, None

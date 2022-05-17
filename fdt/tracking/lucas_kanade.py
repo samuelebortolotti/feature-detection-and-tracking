@@ -27,7 +27,8 @@ def configure_subparsers(subparsers: Subparser) -> None:
       method (str): feature detector, default [default: sift]
       nfeatures (int): number of features for the feature detector [default: 100]
       video (str): video file path if you are willing to run the algorithm on a video
-      frameupdate (int): after how many frame to recalibrate the features [default=50]
+      frame-update (int): after how many frame to recalibrate the features [default=50]
+      output_video_name (str): output video name[if this is specified, the video will be saved in the `output folder`]
     """
 
     parser = subparsers.add_parser("lucas-kanade", help="Lucas Kanade feature tracker")
@@ -106,7 +107,7 @@ def lucas_kanade(
       methods (str): methods to employ in order to track the features
       n_features (int): number of features for the feature detector
       update_every_n_frame (int): after how many frame to recalibrate the features
-      output-video-name (str): file name of the video to produce, if None is passed, no video is produced
+      output_video_name (str): file name of the video to produce, if None is passed, no video is produced
     """
 
     # video capture input
@@ -130,6 +131,7 @@ def lucas_kanade(
     elif method == "harris":
         # Harris corner detector
         feature_extract = harris
+        # load config from `config` file
         feature_extract_conf = {
             "block_size": None,
             "k_size": None,
@@ -140,7 +142,31 @@ def lucas_kanade(
     else:
         # Blob detector
         feature_extract = blob
-        feature_extract_conf = {}
+        # load config from `config` file
+        feature_extract_conf = {
+            "blob_param_dict": {
+                "filterByColor": None,
+                "blobColor": None,
+                "filterByArea": None,
+                "minArea": None,
+                "maxArea": None,
+                "filterByCircularity": None,
+                "minCircularity": None,
+                "maxCircularity": None,
+                "filterByConvexity": None,
+                "minConvexity": None,
+                "maxConvexity": None,
+                "filterByInertia": None,
+                "minInertiaRatio": None,
+                "maxInertiaRatio": None,
+                "minThreshold": None,
+                "maxThreshold": None,
+                "thresholdStep": None,
+                "minDistBetweenBlobs": None,
+                "minRepeatability": None,
+            },
+            "config_file": True,
+        }
 
     # capture the first frame
     ret, ref_frame = cap.read()
@@ -152,16 +178,17 @@ def lucas_kanade(
 
     # whether it is a dry run or not
     dry = output_video_name is None
+    # with dry I mean that no output video is produced
     if not dry:
-        # get the capture data
+        # get the capture data (fps, height, width)
         fps = cap.get(cv2.CAP_PROP_FPS)
         height, width, _ = ref_frame.shape
         output_video = cv2.VideoWriter(
             os.path.join(
                 os.path.dirname(os.path.abspath(__file__)),
-                f"../../output/{output_video_name}.avi",
+                f"../../output/{output_video_name}.avi", # video is in AVI format
             ),
-            cv2.VideoWriter_fourcc(*"XVID"),
+            cv2.VideoWriter_fourcc(*"XVID"), # the XVID codec are used.
             fps,
             (width, height),
         )
@@ -215,6 +242,7 @@ def lucas_kanade(
             f"Lucas-Kanade optical flow + {method} feature tracking", updated_frame
         )
 
+        # write the frame to the video
         if not dry:
             output_video.write(updated_frame)
 

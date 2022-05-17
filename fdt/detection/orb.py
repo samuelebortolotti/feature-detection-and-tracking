@@ -21,7 +21,7 @@ def configure_subparsers(subparsers: Subparser) -> None:
     Subparser parameters
     Args:
       image (str): image path
-      nfeatures (int) [Optional]: number of features to retain [default = 500]
+      n-features (int): number of features to retain [default = 500]
     """
     parser = subparsers.add_parser("orb", help="ORB feature detector")
     parser.add_argument(
@@ -62,7 +62,7 @@ def main(args: Namespace) -> None:
     image_bgr = cv2.imread(args.image, cv2.IMREAD_COLOR)
 
     # call the ORB algorithm
-    orb_kp, orb_desc = orb(frame=image_bgr, n_features=args.n_features)
+    orb_kp, _ = orb(frame=image_bgr, n_features=args.n_features)
 
     # draw the keypoints
     orb_image = draw_features_keypoints(image_bgr, orb_kp)
@@ -71,14 +71,15 @@ def main(args: Namespace) -> None:
     plot_image(orb_image, f"ORB descriptors {os.path.basename(args.image)}")
 
 
-def orb(frame: np.ndarray, n_features: int) -> Tuple[np.ndarray, np.ndarray]:
+def orb(frame: np.ndarray, n_features: int) -> Tuple[cv2.KeyPoint, np.ndarray]:
     """Apply the ORB feature detector on a frame
 
     Args:
       frame (np.ndarray): frame [BGR]
+      n_features (int): number of features to retain
 
     Returns:
-      Tuple[np.ndarray, np.ndarray]: ORB keypoints and descriptors of the frame
+      Tuple[cv2.KeyPoint, np.ndarray]: ORB keypoints and descriptors of the frame
     """
     # load the frame as grayscale
     frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
