@@ -15,8 +15,8 @@ current_conf = {
     "control_params": 0,
     "A": np.array(
         [
-            [1, 0, 1, 0, 0.5, 0],
-            [0, 1, 0, 1, 0, 0.5],
+            [1, 0, 1, 0, 1/33, 0],
+            [0, 1, 0, 1, 0, 1/33],
             [0, 0, 1, 0, 1, 0],
             [0, 0, 0, 1, 0, 1],
             [0, 0, 0, 0, 1, 0],
@@ -24,15 +24,15 @@ current_conf = {
         ],
         np.float32,
     ),
-    "w": np.eye(6, dtype=np.float32) * 0.003,
+    "w": np.eye(6, dtype=np.float32) * 50,
     "H": np.array(
         [
-            [1, 0, 0, 0, 0, 0],
+            [1, 1/33, 0, 0, 0, 0],
             [0, 1, 0, 0, 0, 0],
         ],
         dtype=np.float32,
     ),
-    "v": np.eye(2, dtype=np.float32) * 0.003,
+    "v": np.eye(2, dtype=np.float32) * 50,
     "B": None,
 }
 
