@@ -59,7 +59,7 @@ def main(args: Namespace) -> None:
     assert os.path.exists(args.image), "Image passed does not exist"
 
     # read the colored version of the image
-    image_bgr = cv2.imread(args.image)
+    image_bgr = cv2.imread(args.image, cv2.IMREAD_COLOR)
 
     # call the SIFT algorithm
     sift_kp, sift_desc = sift(frame=image_bgr, n_features=args.n_features)

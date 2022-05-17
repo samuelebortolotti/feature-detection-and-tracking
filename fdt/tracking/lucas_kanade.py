@@ -4,6 +4,7 @@ from argparse import _SubParsersAction as Subparser
 from argparse import Namespace
 import cv2
 from fdt.detection import METHODS
+from fdt.detection.blob import blob
 from fdt.detection.harris import harris
 from fdt.detection.orb import orb
 from fdt.detection.sift import sift
@@ -117,12 +118,29 @@ def lucas_kanade(
     cap = cv2.VideoCapture(cap_input)
 
     # set the parameters according to the method selected
+    # and load the parameters accordingly
     if method == "sift":
         # SIFT
         feature_extract = sift
+        feature_extract_conf = {"n_features": n_features}
     elif method == "orb":
         # ORB
         feature_extract = orb
+        feature_extract_conf = {"n_features": n_features}
+    elif method == "harris":
+        # Harris corner detector
+        feature_extract = harris
+        feature_extract_conf = {
+            "block_size": None,
+            "k_size": None,
+            "k": None,
+            "tresh": None,
+            "config_file": True,
+        }
+    else:
+        # Blob detector
+        feature_extract = blob
+        feature_extract_conf = {}
 
     # capture the first frame
     ret, ref_frame = cap.read()
@@ -149,7 +167,7 @@ def lucas_kanade(
         )
 
     # extract descriptors and keypoints of the current frame
-    keypoints_to_track, _ = feature_extract(ref_frame, n_features)
+    keypoints_to_track, _ = feature_extract(ref_frame, **feature_extract_conf)
 
     # frame_counter
     frame_counter = 0
@@ -172,7 +190,7 @@ def lucas_kanade(
         # whether to update the feature matched
         if frame_counter % update_every_n_frame == 0:
             # extract descriptors and keypoints of the current frame
-            keypoints_to_track, _ = feature_extract(frame, n_features)
+            keypoints_to_track, _ = feature_extract(frame, **feature_extract_conf)
             # conver the keypoints in numpy.ndarray for the Lucas-Kanade optical flow
             keypoints_to_track = np.float32(
                 [key_point.pt for key_point in keypoints_to_track]

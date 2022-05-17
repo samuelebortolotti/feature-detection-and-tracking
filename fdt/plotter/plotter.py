@@ -1,5 +1,6 @@
 """ Plotter utils
 """
+import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -11,7 +12,7 @@ def plot_image(image: np.ndarray, title: str) -> None:
       image (np.ndarray): image to display
       title (str): title of the image
     """
-    plt.imshow(image)
+    plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
     plt.axis("off")
     plt.title(title)
 

@@ -6,7 +6,9 @@ import numpy as np
 from typing import Tuple
 
 
-def draw_features_keypoints(image: np.ndarray, keypoints: np.ndarray) -> np.ndarray:
+def draw_features_keypoints(
+    image: np.ndarray, keypoints: np.ndarray, color: Tuple[int, int, int] = (0, 0, 255)
+) -> np.ndarray:
     r"""Draw the feature keypoints on the image passed
 
     Args:
@@ -21,11 +23,12 @@ def draw_features_keypoints(image: np.ndarray, keypoints: np.ndarray) -> np.ndar
         image,
         keypoints,
         image,
-        color=(0, 0, 255),
+        color=color,
         flags=cv2.DRAW_MATCHES_FLAGS_DEFAULT,
     )
 
     return img_kp
+
 
 def draw_lk_keypoints(
     frame: np.ndarray,
@@ -50,7 +53,11 @@ def draw_lk_keypoints(
     for corner in lk_features:
         x, y = corner.ravel()
         frame = cv2.circle(
-            frame, (x, y), radius=radius, color=color, thickness=thickness, lineType=line_type
+            frame,
+            (x, y),
+            radius=radius,
+            color=color,
+            thickness=thickness,
+            lineType=line_type,
         )
     return frame
-
