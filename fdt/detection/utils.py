@@ -7,7 +7,9 @@ from typing import Tuple
 
 
 def draw_features_keypoints(
-        image: np.ndarray, keypoints: cv2.KeyPoint, color: Tuple[int, int, int] = (0, 0, 255)
+    image: np.ndarray,
+    keypoints: cv2.KeyPoint,
+    color: Tuple[int, int, int] = (0, 0, 255),
 ) -> np.ndarray:
     r"""Draw the feature keypoints on the image passed
 

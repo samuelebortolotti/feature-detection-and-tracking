@@ -186,9 +186,9 @@ def lucas_kanade(
         output_video = cv2.VideoWriter(
             os.path.join(
                 os.path.dirname(os.path.abspath(__file__)),
-                f"../../output/{output_video_name}.avi", # video is in AVI format
+                f"../../output/{output_video_name}.avi",  # video is in AVI format
             ),
-            cv2.VideoWriter_fourcc(*"XVID"), # the XVID codec are used.
+            cv2.VideoWriter_fourcc(*"XVID"),  # the XVID codec are used.
             fps,
             (width, height),
         )

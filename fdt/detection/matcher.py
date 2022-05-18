@@ -301,7 +301,9 @@ def feature_matching(
     assert ret, "Error in reading the first frame from Video Capture"
 
     # extract the features from the first frame
-    keypoints_to_match, descriptors_to_match = feature_extract(reference_frame, **feature_extract_conf)
+    keypoints_to_match, descriptors_to_match = feature_extract(
+        reference_frame, **feature_extract_conf
+    )
 
     # frame_counter
     frame_counter = 0

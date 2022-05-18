@@ -52,133 +52,129 @@ def configure_subparsers(subparsers: Subparser) -> None:
         "-FBCO",
         type=bool,
         default=False,
-        help="Wether to consider a specific colour"
+        help="Wether to consider a specific colour",
     )
     parser.add_argument(
         "--blob-color",
         "-BC",
         type=int,
         default=0,
-        help="Specific color to consider when filtering by color"
+        help="Specific color to consider when filtering by color",
     )
     parser.add_argument(
         "--filter-by-area",
         "-FBA",
         type=bool,
         default=True,
-        help="Whether to filter by area"
+        help="Whether to filter by area",
     )
     parser.add_argument(
         "--min-area",
         "-MIA",
         type=float,
         default=3.0,
-        help="Min area to consider when filtering by area"
+        help="Min area to consider when filtering by area",
     )
     parser.add_argument(
         "--max-area",
         "-MXA",
         type=float,
         default=400.0,
-        help="Max area to consider when filtering by area"
+        help="Max area to consider when filtering by area",
     )
     parser.add_argument(
         "--filter-by-circularity",
         "-FBC",
         type=bool,
         default=True,
-        help="Whether to filter by circularity"
+        help="Whether to filter by circularity",
     )
     parser.add_argument(
         "--min-circularity",
         "-MIC",
         type=float,
         default=0.0,
-        help="Min circularity to consider when filtering by circularity"
+        help="Min circularity to consider when filtering by circularity",
     )
     parser.add_argument(
         "--max-circularity",
         "-MXC",
         type=float,
         default=3.4028234663852886e38,
-        help="Max circularity to consider when filtering by circularity"
+        help="Max circularity to consider when filtering by circularity",
     )
     parser.add_argument(
         "--filter-by-convexity",
         "-FBX",
         type=bool,
         default=False,
-        help="Whether to filter by convexity"
+        help="Whether to filter by convexity",
     )
     parser.add_argument(
         "--min-convexity",
         "-MIX",
         type=float,
         default=0.0,
-        help="Min convexity to consider when filtering by convexity"
+        help="Min convexity to consider when filtering by convexity",
     )
     parser.add_argument(
         "--max-convexity",
         "-MXX",
         type=float,
         default=3.4028234663852886e38,
-        help="Max convexity to consider when filtering by convexity"
+        help="Max convexity to consider when filtering by convexity",
     )
     parser.add_argument(
         "--filter-by-inertia",
         "-FBI",
         type=bool,
         default=True,
-        help="Whether to filter by inertia"
+        help="Whether to filter by inertia",
     )
     parser.add_argument(
         "--min-inertia",
         "-MII",
         type=float,
         default=0.55,
-        help="Min inertia to consider when filtering by inertia"
+        help="Min inertia to consider when filtering by inertia",
     )
     parser.add_argument(
         "--max-inertia",
         "-MXI",
         type=float,
         default=3.4028234663852886e38,
-        help="Max inertia to consider when filtering by inertia"
+        help="Max inertia to consider when filtering by inertia",
     )
     parser.add_argument(
         "--min-threshold",
         "-MIT",
         type=float,
         default=0.0,
-        help="Min treshold to consider when filtering"
+        help="Min treshold to consider when filtering",
     )
     parser.add_argument(
         "--max-threshold",
         "-MXT",
         type=float,
         default=255.0,
-        help="Max treshold to consider when filtering"
+        help="Max treshold to consider when filtering",
     )
     parser.add_argument(
-        "--threshold-step",
-        "-TS",
-        type=int,
-        default=5,
-        help="Step to perform"
+        "--threshold-step", "-TS", type=int, default=5, help="Step to perform"
     )
     parser.add_argument(
         "--min-dist-between-blobs",
         "-MDBB",
         type=float,
         default=3.0,
-        help="Min distance between blobs"
+        help="Min distance between blobs",
     )
     parser.add_argument(
         "--min-repeatability",
         "-MR",
         type=int,
         default=2,
-        help="Repeatability for stable keypoints"
+        help="Repeatability for stable keypoints",
     )
     parser.add_argument(
         "--config-file",
@@ -268,7 +264,9 @@ def params_init(attributes: Dict[str, Any]) -> cv2.SimpleBlobDetector_Params:
     return blob_params
 
 
-def load_blob_params(blob_param_dict: Dict[str, Any], config_file: bool) -> cv2.SimpleBlobDetector_Params:
+def load_blob_params(
+    blob_param_dict: Dict[str, Any], config_file: bool
+) -> cv2.SimpleBlobDetector_Params:
     """Loads the parameters from the `config` file if they are not provided and the config_file flag is
     specified
 

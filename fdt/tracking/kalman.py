@@ -312,9 +312,9 @@ def kalman(
         output_video = cv2.VideoWriter(
             os.path.join(
                 os.path.dirname(os.path.abspath(__file__)),
-                f"../../output/{output_video_name}.avi", # the produced video is in AVI format
+                f"../../output/{output_video_name}.avi",  # the produced video is in AVI format
             ),
-            cv2.VideoWriter_fourcc(*"XVID"), # the employed codec are XVID.
+            cv2.VideoWriter_fourcc(*"XVID"),  # the employed codec are XVID.
             fps,
             (width, height),
         )

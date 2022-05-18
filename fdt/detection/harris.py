@@ -110,7 +110,9 @@ def main(args: Namespace) -> None:
     plot_image(harris_img, f"Harris descriptors {os.path.basename(args.image)}")
 
 
-def load_params(block_size: int, k_size: int, k: float, tresh: float, conf_file: bool) -> Tuple[int, int, float, float]:
+def load_params(
+    block_size: int, k_size: int, k: float, tresh: float, conf_file: bool
+) -> Tuple[int, int, float, float]:
     """Loads the parameters from the `config` file if they are not provided and the config_file flag is
     specified
 
