@@ -159,7 +159,7 @@ def harris(
 
     Returns:
       Tuple[cv2.KeyPoint, np.ndarray]: Harris keypoints and descriptors of the frame [**Note**, the Harris corner detector has no
-      descriptor, thus None is returned. This is done for compatibility reasons with other feature extractors]
+      descriptor, thus I have employed SIFT for computing only the descriptors based on the Keypoints detected by Harris]
     """
 
     # load parameters
@@ -173,6 +173,9 @@ def harris(
     # run the Harris corner detector
     harris = cv2.cornerHarris(frame_gray, block_size, k_size, k)
 
+    # SIFT is employed only for descriptor extraction purposes
+    sift_desc_extractor = cv2.SIFT_create()
+
     # dilate method to mark the corners in the returned image, basically, it adds pixels to the corners
     harris = cv2.dilate(harris, None)
 
@@ -182,5 +185,8 @@ def harris(
     # convert numpy.ndarray points into opencv KeyPoints
     keypoints = [cv2.KeyPoint(int(k[1]), int(k[0]), 1) for k in keypoints]
 
+    # use SIFT so as to extract the descriptors
+    keypoints, descriptors = sift_desc_extractor.compute(frame_gray, keypoints)
+
     # return keypoints and not existing descriptors
-    return keypoints, None
+    return keypoints, descriptors

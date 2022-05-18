@@ -128,15 +128,19 @@ Alternatively, you can obtain the same result in a less verbose manner by tuning
 make orb
 ```
 
-### 5. Run the Harris corner detector
+### 6. Run the Harris corner detector
 
-TODO
+```bash
+make harris
+```
 
-### 5. Run the Simple Blob detector
+### 7. Run the Simple Blob detector
 
-TODO
+```bash
+make blob
+```
 
-### 5. Run the feature matching
+### 8. Run the feature matching
 
 ```bash
 python -m fdt matcher matcher_method [--n-features 100 --flann --matching-distance 60 --video material/Contesto_industriale1.mp4 --frame-update 30]
@@ -148,7 +152,7 @@ Alternatively, you can obtain the same result in a less verbose manner by tuning
 make matcher
 ```
 
-### 6a. Run the feature detection with a the Kalman filter as tracking algorithm
+### 9a. Run the feature detection with a the Kalman filter as tracking algorithm
 
 ```bash
 python -m fdt kalman matcher_method [--n-features 100 --flann --matching-distance 60 --video material/Contesto_industriale1.mp4 --frame-update 30 --output-video-name videoname]
@@ -187,8 +191,8 @@ current_conf = {
     "control_params": 0,
     "A": np.array(
         [
-            [1, 0, 1, 0, 0.5, 0],
-            [0, 1, 0, 1, 0, 0.5],
+            [1, 0, 1, 0, 1/33, 0],
+            [0, 1, 0, 1, 0, 1/33],
             [0, 0, 1, 0, 1, 0],
             [0, 0, 0, 1, 0, 1],
             [0, 0, 0, 0, 1, 0],
@@ -196,22 +200,22 @@ current_conf = {
         ],
         np.float32,
     ),
-    "w": np.eye(6, dtype=np.float32) * 0.003,
+    "w": np.eye(6, dtype=np.float32) * 50,
     "H": np.array(
         [
-            [1, 0, 0, 0, 0, 0],
+            [1, 1/33, 0, 0, 0, 0],
             [0, 1, 0, 0, 0, 0],
         ],
         dtype=np.float32,
     ),
-    "v": np.eye(2, dtype=np.float32) * 0.003,
+    "v": np.eye(2, dtype=np.float32) * 50,
     "B": None,
 }
 ```
 
 > **Note:** if the program raises an error when the name of the output video is passed, it is possible that it is an issue with CODECS, thus consider changing the ``cv2.VideoWriter_fourcc(..)` line in the code.
 
-### 6b. Run the feature detection with a the Kalman filter as tracking algorithm
+### 9b. Run the feature detection with a the Kalman filter as tracking algorithm
 
 ```bash
 python -m fdt lukas-kanade matcher_method [--nfeatures 100 --video material/Contesto_industriale1.mp4 --frameupdate 30]

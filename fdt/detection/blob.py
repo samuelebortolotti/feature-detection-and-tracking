@@ -306,14 +306,17 @@ def blob(
       conf_file (bool): use the automatic configuration, provided in the `config` folder for the non-specified arguments
 
     Returns:
-      Tuple[cv2.KeyPoint, np.ndarray]: Simple Blob keypoints and descriptors of the frame [**Note**, the Blob feature detector has no
-      descriptor, thus None is returned. This is done for compatibility reasons with other feature extractors]
+      Tuple[cv2.KeyPoint, np.ndarray]: Simple Blob keypoints and descriptors of the frame [**Note**, the Simple Blob Detector has no
+      descriptors, thus I have employed SIFT for computing only the descriptors based on the Keypoints detected by Blob Detector]
     """
     # load the frame as grayscale
     frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     # set blob detector parameters
     blob_params = cv2.SimpleBlobDetector_Params()
+
+    # SIFT is employed only for descriptor extraction purposes
+    sift_desc_extractor = cv2.SIFT_create()
 
     # load parameters of the blob detector
     blob_params = load_blob_params(
@@ -326,5 +329,8 @@ def blob(
     # run the simple blob detector
     keypoints = blob_detector.detect(frame_gray)
 
-    # return keypoints and not existing descriptors
-    return keypoints, None
+    # use SIFT so as to extract the descriptors
+    keypoints, descriptors = sift_desc_extractor.compute(frame_gray, keypoints)
+
+    # return keypoints and the descriptors
+    return keypoints, descriptors

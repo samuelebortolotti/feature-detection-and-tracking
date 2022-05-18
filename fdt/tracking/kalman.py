@@ -8,6 +8,8 @@ from fdt.detection import METHODS
 from fdt.detection.matcher import (
     match_features,
 )
+from fdt.detection.blob import blob
+from fdt.detection.harris import harris
 from fdt.detection.orb import orb
 from fdt.detection.utils import draw_features_keypoints
 from fdt.detection.sift import sift
@@ -208,16 +210,20 @@ def kalman(
     if method == "sift":
         # SIFT
         feature_extract = sift
-        # the brute force matcher will employ the L2 NORM to find
+        # configuration of the feature extractor
+        feature_extract_conf = {"n_features": n_features}
+        # the brute force matcher will employ the L2 NORM
         feature_matching_mode = cv2.NORM_L2
         # mode for the FLANN matcher
         FLANN_INDEX_KDTREE = 1
         # feature parameters for FLANN
         feature_index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
-    else:
+    elif method == "orb":
         # ORB
         feature_extract = orb
-        # the brute force matcher will employ the HAMMING NORM to find
+        # configuration of the feature extractor
+        feature_extract_conf = {"n_features": n_features}
+        # the brute force matcher will employ the HAMMING NORM
         feature_matching_mode = cv2.NORM_HAMMING
         # FLANN index LSH
         FLANN_INDEX_LSH = 6
@@ -228,6 +234,57 @@ def kalman(
             key_size=12,
             multi_probe_level=1,
         )
+    elif method == "harris":
+        # Harris corner detector
+        feature_extract = harris
+        # load config from `config` file
+        feature_extract_conf = {
+            "block_size": None,
+            "k_size": None,
+            "k": None,
+            "tresh": None,
+            "config_file": True,
+        }
+        # as it employs SIFT descriptors the brute force matcher will employ the L2 NORM
+        feature_matching_mode = cv2.NORM_L2
+        # mode for the FLANN matcher
+        FLANN_INDEX_KDTREE = 1
+        # feature parameters for FLANN
+        feature_index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
+    else:
+        # Blob detector
+        feature_extract = blob
+        # load config from `config` file
+        feature_extract_conf = {
+            "blob_param_dict": {
+                "filterByColor": None,
+                "blobColor": None,
+                "filterByArea": None,
+                "minArea": None,
+                "maxArea": None,
+                "filterByCircularity": None,
+                "minCircularity": None,
+                "maxCircularity": None,
+                "filterByConvexity": None,
+                "minConvexity": None,
+                "maxConvexity": None,
+                "filterByInertia": None,
+                "minInertiaRatio": None,
+                "maxInertiaRatio": None,
+                "minThreshold": None,
+                "maxThreshold": None,
+                "thresholdStep": None,
+                "minDistBetweenBlobs": None,
+                "minRepeatability": None,
+            },
+            "config_file": True,
+        }
+        # as it employs SIFT descriptors the brute force matcher will employ the L2 NORM
+        feature_matching_mode = cv2.NORM_L2
+        # mode for the FLANN matcher
+        FLANN_INDEX_KDTREE = 1
+        # feature parameters for FLANN
+        feature_index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
 
     if not flann:
         # Brute force point matcher, thanks to the crossCheck only the consistent pairs are returned
@@ -263,7 +320,7 @@ def kalman(
         )
 
     # extract descriptors and keypoints of the current frame
-    _, descriptors_to_match = feature_extract(ref_frame, n_features)
+    _, descriptors_to_match = feature_extract(ref_frame, **feature_extract_conf)
 
     # keypoints extracted using the kalman filter
     kalman_keypoints = []
@@ -298,10 +355,10 @@ def kalman(
         # whether to update the feature matched
         if frame_counter % update_every_n_frame == 0:
             # extract descriptors and keypoints of the current frame
-            _, descriptors_to_match = feature_extract(frame, n_features)
+            _, descriptors_to_match = feature_extract(frame, **feature_extract_conf)
 
         # extract descriptors and keypoints of the current frame
-        keypoints, descriptors = feature_extract(frame, n_features)
+        keypoints, descriptors = feature_extract(frame, **feature_extract_conf)
 
         # matching points
         matching_points, _ = match_features(

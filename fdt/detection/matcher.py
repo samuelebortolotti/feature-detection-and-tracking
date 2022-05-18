@@ -5,6 +5,8 @@ from argparse import Namespace
 import cv2
 from cv2 import BFMatcher
 import imutils
+from fdt.detection.blob import blob
+from fdt.detection.harris import harris
 from fdt.detection.orb import orb
 from fdt.detection.sift import sift
 import numpy as np
@@ -214,26 +216,82 @@ def feature_matching(
     if method == "sift":
         # SIFT
         feature_extract = sift
+        # configuration of the feature extractor
+        feature_extract_conf = {"n_features": n_features}
         feature_matching_mode = cv2.NORM_L2
         FLANN_INDEX_KDTREE = 1
         feature_index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
-    else:
+    elif method == "orb":
         # ORB
         feature_extract = orb
+        # configuration of the feature extractor
+        feature_extract_conf = {"n_features": n_features}
         feature_matching_mode = cv2.NORM_HAMMING
         # FLANN index LSH
         FLANN_INDEX_LSH = 6
         feature_index_params = dict(
             algorithm=FLANN_INDEX_LSH,
-            table_number=6,  # 12
-            key_size=12,  # 20
+            table_number=6,
+            key_size=12,
             multi_probe_level=1,
-        )  # 2
+        )
+    elif method == "harris":
+        # Harris corner detector
+        feature_extract = harris
+        # load config from `config` file
+        feature_extract_conf = {
+            "block_size": None,
+            "k_size": None,
+            "k": None,
+            "tresh": None,
+            "config_file": True,
+        }
+        # as it employs SIFT descriptors the brute force matcher will employ the L2 NORM
+        feature_matching_mode = cv2.NORM_L2
+        # mode for the FLANN matcher
+        FLANN_INDEX_KDTREE = 1
+        # feature parameters for FLANN
+        feature_index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
+    else:
+        # Blob detector
+        feature_extract = blob
+        # load config from `config` file
+        feature_extract_conf = {
+            "blob_param_dict": {
+                "filterByColor": None,
+                "blobColor": None,
+                "filterByArea": None,
+                "minArea": None,
+                "maxArea": None,
+                "filterByCircularity": None,
+                "minCircularity": None,
+                "maxCircularity": None,
+                "filterByConvexity": None,
+                "minConvexity": None,
+                "maxConvexity": None,
+                "filterByInertia": None,
+                "minInertiaRatio": None,
+                "maxInertiaRatio": None,
+                "minThreshold": None,
+                "maxThreshold": None,
+                "thresholdStep": None,
+                "minDistBetweenBlobs": None,
+                "minRepeatability": None,
+            },
+            "config_file": True,
+        }
+        # as it employs SIFT descriptors the brute force matcher will employ the L2 NORM
+        feature_matching_mode = cv2.NORM_L2
+        # mode for the FLANN matcher
+        FLANN_INDEX_KDTREE = 1
+        # feature parameters for FLANN
+        feature_index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
 
     # Brute force point matcher
     if not flann:
         matcher = cv2.BFMatcher(feature_matching_mode, crossCheck=True)
     else:
+        # FLANN matcher
         search_params = dict(checks=100)
         matcher = cv2.FlannBasedMatcher(feature_index_params, search_params)
 
@@ -243,7 +301,7 @@ def feature_matching(
     assert ret, "Error in reading the first frame from Video Capture"
 
     # extract the features from the first frame
-    keypoints_to_match, descriptors_to_match = feature_extract(reference_frame, 100)
+    keypoints_to_match, descriptors_to_match = feature_extract(reference_frame, **feature_extract_conf)
 
     # frame_counter
     frame_counter = 0
@@ -265,11 +323,11 @@ def feature_matching(
             reference_frame = frame.copy()
             # extract the new reference keypoints and reference descriptors
             keypoints_to_match, descriptors_to_match = feature_extract(
-                frame, n_features
+                frame, **feature_extract_conf
             )
 
         # extract current keypoints and descriptors
-        keypoints, descriptors = feature_extract(frame, n_features)
+        keypoints, descriptors = feature_extract(frame, **feature_extract_conf)
 
         # perform the brute force matching
         _, matching_points = match_features(
@@ -282,7 +340,7 @@ def feature_matching(
 
         # show the matches frame
         cv2.imshow(
-            f"Kalman + {method} object tracking",
+            f"{method} feature matching",
             draw_features_matched(
                 reference_image=reference_frame,
                 current_image=frame,
@@ -294,9 +352,6 @@ def feature_matching(
 
         # to wait
         wait = 1
-        # sift is slow, thus I prefer to speed up the vide
-        if method == "sift":
-            wait = 33
 
         # exit when q is pressed
         if cv2.waitKey(wait) == ord("q"):

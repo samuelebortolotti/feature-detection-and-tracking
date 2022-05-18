@@ -23,6 +23,16 @@ ORB := orb
 ORB_IMAGE := material/test/calchera.jpg
 ORB_FLAGS := --n-features 150
 
+# ======= HARRIS ===================
+HARRIS := harris 
+HARRIS_IMAGE := material/test/calchera.jpg
+HARRIS_FLAGS := --config-file
+
+# ======= BLOB =====================
+BLOB := blob 
+BLOB_IMAGE := material/test/Lenna.png
+BLOB_FLAGS := --config-file
+
 # ======= MATCHER ==================
 MATCHER := matcher
 MATCHER_METHOD := sift
@@ -31,7 +41,7 @@ MATCHER_FLAGS := --n-features 150 --flann --matching-distance 60 --video materia
 # ======= KALMAN ==================
 KALMAN := kalman
 KALMAN_METHOD := orb
-KALMAN_FLAGS := --n-features 100 --flann --matching-distance 60 --video material/Contesto_industriale1.mp4 --frame-update 50
+KALMAN_FLAGS := --n-features 100 --flann --matching-distance 40 --video material/Contesto_industriale1.mp4 --frame-update 50
 
 # ======= KALMAN ==================
 LUCAS_KANADE := lucas-kanade
@@ -104,7 +114,7 @@ OPEN := xdg-open
 SED := sed
 	
 # RULES
-.PHONY: help env install install-dev sift orb matcher kalman lucas-kanade doc doc-layout open-doc format-code
+.PHONY: help env install install-dev sift orb harris blob matcher kalman lucas-kanade doc doc-layout open-doc format-code
 
 help:
 	@$(ECHO) '$(YELLOW)Makefile help$(NONE)'
@@ -114,6 +124,8 @@ help:
 	* install-dev		: install the development requirements listed in requirements.dev.txt\n \
 	* sift			: run the SIFT feature detector on the image passed as parameter\n \
 	* orb			: run the ORB feature detector on the image passed as parameter\n \
+	* harris			: run the Harris corner detector on the image passed as parameter\n \
+	* blob			: run the blob feature detector on the image passed as parameter\n \
 	* matcher		: run either the brute force matcher or the FLANN matcher on a video\n \
 	* kalman		: run the Kalman filter to track the feature on a video\n \
 	* lucas-kanade		: run the Lucas-Kanade optical flow to track the feature on a video\n \
@@ -148,6 +160,16 @@ sift:
 orb:
 	@$(ECHO) '$(BLUE)Running ORB on an image ..$(NONE)'
 	@$(PYTHON) $(PYFLAGS) $(MAIN) $(MAIN_FLAGS) $(ORB) $(ORB_IMAGE) $(ORB_FLAGS)
+	@$(ECHO) '$(BLUE)Done$(NONE)
+
+harris:
+	@$(ECHO) '$(BLUE)Running Harris corner detector on an image ..$(NONE)'
+	@$(PYTHON) $(PYFLAGS) $(MAIN) $(MAIN_FLAGS) $(HARRIS) $(HARRIS_IMAGE) $(HARRIS_FLAGS)
+	@$(ECHO) '$(BLUE)Done$(NONE)
+
+blob:
+	@$(ECHO) '$(BLUE)Running the blob detector on an image ..$(NONE)'
+	@$(PYTHON) $(PYFLAGS) $(MAIN) $(MAIN_FLAGS) $(BLOB) $(BLOB_IMAGE) $(BLOB_FLAGS)
 	@$(ECHO) '$(BLUE)Done$(NONE)
 
 matcher:
