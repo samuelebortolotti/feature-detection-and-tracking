@@ -130,11 +130,35 @@ make orb
 
 ### 6. Run the Harris corner detector
 
+To run the [Harris corner detector](https://en.wikipedia.org/wiki/Harris_corner_detector) on an image you can type:
+
+```bash
+python -m fdt harris path_to_image [--config-file]
+```
+
+where `path_to_image` is the path to the image you want to process with the Harris corner detector and `--config-file` is used in order to load the configuration present in `fdt/config/harris_conf.py`.
+
+As output, the algorithm will plot the original image with the Harris corners drawn on top of it.
+
+Alternatively, you can obtain the same result in a less verbose manner by tuning the flags in the `Makefile` and then run:
+
 ```bash
 make harris
 ```
 
 ### 7. Run the Simple Blob detector
+
+To run the [Simple blob detector](https://docs.opencv.org/3.4/d0/d7a/classcv_1_1SimpleBlobDetector.html) on an image you can type:
+
+```bash
+python -m fdt blob path_to_image [--config-file]
+```
+
+where `path_to_image` is the path to the image you want to process with the Simple Blob detector and `--config-file` is used in order to load the configuration present in `fdt/config/blob_conf.py`.
+
+As output, the algorithm will plot the original image with the blobs center keypoint drawn on top of it.
+
+Alternatively, you can obtain the same result in a less verbose manner by tuning the flags in the `Makefile` and then run:
 
 ```bash
 make blob
@@ -191,8 +215,8 @@ current_conf = {
     "control_params": 0,
     "A": np.array(
         [
-            [1, 0, 1, 0, 1/33, 0],
-            [0, 1, 0, 1, 0, 1/33],
+            [1, 0, 1, 0, 1 / 33, 0],
+            [0, 1, 0, 1, 0, 1 / 33],
             [0, 0, 1, 0, 1, 0],
             [0, 0, 0, 1, 0, 1],
             [0, 0, 0, 0, 1, 0],
@@ -203,7 +227,7 @@ current_conf = {
     "w": np.eye(6, dtype=np.float32) * 50,
     "H": np.array(
         [
-            [1, 1/33, 0, 0, 0, 0],
+            [1, 1 / 33, 0, 0, 0, 0],
             [0, 1, 0, 0, 0, 0],
         ],
         dtype=np.float32,
@@ -213,7 +237,7 @@ current_conf = {
 }
 ```
 
-> **Note:** if the program raises an error when the name of the output video is passed, it is possible that it is an issue with CODECS, thus consider changing the ``cv2.VideoWriter_fourcc(..)` line in the code.
+> **Note:** if the program raises an error when the name of the output video is passed, it is possible that it is an issue with CODECS, thus consider changing the ``cv2.VideoWriter_fourcc(..)` line in the code (`tracking/kalman.py`).
 
 ### 9b. Run the feature detection with a the Kalman filter as tracking algorithm
 
@@ -232,4 +256,11 @@ Alternatively, you can obtain the same result in a less verbose manner by tuning
 make lukas-kanade
 ```
 
-> **Note:** if the program raises an error when the name of the output video is passed, it is possible that it is an issue with CODECS, thus consider changing the ``cv2.VideoWriter_fourcc(..)` line in the code.
+> **Note:** if the program raises an error when the name of the output video is passed, it is possible that it is an issue with CODECS, thus consider changing the ``cv2.VideoWriter_fourcc(..)` line in the code (`tracking/lucas_kanade.py`).
+
+## 10 Report
+
+The report concerning the implementation details and my considerations regarding the feature detectors is present in the `report` folder.
+
+## Extra
+

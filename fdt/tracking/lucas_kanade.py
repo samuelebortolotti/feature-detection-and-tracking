@@ -136,7 +136,7 @@ def lucas_kanade(
             "block_size": None,
             "k_size": None,
             "k": None,
-            "tresh": None,
+            "thresh": None,
             "config_file": True,
         }
     else:

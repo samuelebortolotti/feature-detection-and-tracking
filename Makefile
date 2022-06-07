@@ -15,22 +15,22 @@ PIP := pip
 
 # ======= SIFT =====================
 SIFT := sift 
-SIFT_IMAGE := material/test/calchera.jpg
-SIFT_FLAGS := --n-features 150
+SIFT_IMAGE := material/test/Lenna.png
+SIFT_FLAGS := --n-features 35
 
 # ======= ORB ======================
 ORB := orb 
-ORB_IMAGE := material/test/calchera.jpg
-ORB_FLAGS := --n-features 150
+ORB_IMAGE := material/test/Lenna.png
+ORB_FLAGS := --n-features 100
 
 # ======= HARRIS ===================
 HARRIS := harris 
-HARRIS_IMAGE := material/test/calchera.jpg
+HARRIS_IMAGE := material/test/limekiln.jpg
 HARRIS_FLAGS := --config-file
 
 # ======= BLOB =====================
 BLOB := blob 
-BLOB_IMAGE := material/test/Lenna.png
+BLOB_IMAGE := material/test/scene.png
 BLOB_FLAGS := --config-file
 
 # ======= MATCHER ==================
@@ -41,12 +41,12 @@ MATCHER_FLAGS := --n-features 150 --flann --matching-distance 60 --video materia
 # ======= KALMAN ==================
 KALMAN := kalman
 KALMAN_METHOD := orb
-KALMAN_FLAGS := --n-features 100 --flann --matching-distance 40 --video material/Contesto_industriale1.mp4 --frame-update 50
+KALMAN_FLAGS := --n-features 300 --video material/Contesto_industriale1.mp4 --frame-update 50
 
-# ======= KALMAN ==================
+# ======= LUCAS-KANADE ============
 LUCAS_KANADE := lucas-kanade
 LUCAS_KANADE_METHOD := sift
-LUCAS_KANADE_FLAGS := --n-features 100 --video material/Contesto_industriale1.mp4 --frame-update 50
+LUCAS_KANADE_FLAGS := --video material/Contesto_industriale1.mp4
 
 # ======= FORMAT ===================
 FORMAT := black
@@ -155,37 +155,37 @@ install-dev:
 sift:
 	@$(ECHO) '$(BLUE)Running SIFT on an image ..$(NONE)'
 	@$(PYTHON) $(PYFLAGS) $(MAIN) $(MAIN_FLAGS) $(SIFT) $(SIFT_IMAGE) $(SIFT_FLAGS)
-	@$(ECHO) '$(BLUE)Done$(NONE)
+	@$(ECHO) '$(BLUE)Done$(NONE)'
 
 orb:
 	@$(ECHO) '$(BLUE)Running ORB on an image ..$(NONE)'
 	@$(PYTHON) $(PYFLAGS) $(MAIN) $(MAIN_FLAGS) $(ORB) $(ORB_IMAGE) $(ORB_FLAGS)
-	@$(ECHO) '$(BLUE)Done$(NONE)
+	@$(ECHO) '$(BLUE)Done$(NONE)'
 
 harris:
 	@$(ECHO) '$(BLUE)Running Harris corner detector on an image ..$(NONE)'
 	@$(PYTHON) $(PYFLAGS) $(MAIN) $(MAIN_FLAGS) $(HARRIS) $(HARRIS_IMAGE) $(HARRIS_FLAGS)
-	@$(ECHO) '$(BLUE)Done$(NONE)
+	@$(ECHO) '$(BLUE)Done$(NONE)'
 
 blob:
 	@$(ECHO) '$(BLUE)Running the blob detector on an image ..$(NONE)'
 	@$(PYTHON) $(PYFLAGS) $(MAIN) $(MAIN_FLAGS) $(BLOB) $(BLOB_IMAGE) $(BLOB_FLAGS)
-	@$(ECHO) '$(BLUE)Done$(NONE)
+	@$(ECHO) '$(BLUE)Done$(NONE)'
 
 matcher:
 	@$(ECHO) '$(BLUE)Running the keypoint matcher ..$(NONE)'
 	@$(PYTHON) $(PYFLAGS) $(MAIN) $(MAIN_FLAGS) $(MATCHER) $(MATCHER_METHOD) $(MATCHER_FLAGS)
-	@$(ECHO) '$(BLUE)Done$(NONE)
+	@$(ECHO) '$(BLUE)Done$(NONE)'
 
 kalman:
 	@$(ECHO) '$(BLUE)Running the feature tracking employing a feature detector and Kalman filters ..$(NONE)'
 	@$(PYTHON) $(PYFLAGS) $(MAIN) $(MAIN_FLAGS) $(KALMAN) $(KALMAN_METHOD) $(KALMAN_FLAGS)
-	@$(ECHO) '$(BLUE)Done$(NONE)
+	@$(ECHO) '$(BLUE)Done$(NONE)'
 
 lucas-kanade:
 	@$(ECHO) '$(BLUE)Running the feature tracking employing a feature detector and Lucas-Kanade optical flow ..$(NONE)'
 	@$(PYTHON) $(PYFLAGS) $(MAIN) $(MAIN_FLAGS) $(LUCAS_KANADE) $(LUCAS_KANADE_METHOD) $(LUCAS_KANADE_FLAGS)
-	@$(ECHO) '$(BLUE)Done$(NONE)
+	@$(ECHO) '$(BLUE)Done$(NONE)'
 
 doc-layout:
 	@$(ECHO) '$(BLUE)Generating the Sphinx layout..$(NONE)'

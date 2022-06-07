@@ -242,7 +242,7 @@ def kalman(
             "block_size": None,
             "k_size": None,
             "k": None,
-            "tresh": None,
+            "thresh": None,
             "config_file": True,
         }
         # as it employs SIFT descriptors the brute force matcher will employ the L2 NORM
@@ -361,13 +361,17 @@ def kalman(
         keypoints, descriptors = feature_extract(frame, **feature_extract_conf)
 
         # matching points
-        matching_points, _ = match_features(
-            matcher=matcher,
-            first_descriptors=descriptors_to_match,
-            second_descriptors=descriptors,
-            second_keypoints=keypoints,
-            max_matching_distance=matching_distance,
-        )
+        try:
+            matching_points, _ = match_features(
+                matcher=matcher,
+                first_descriptors=descriptors_to_match,
+                second_descriptors=descriptors,
+                second_keypoints=keypoints,
+                max_matching_distance=matching_distance,
+            )
+        except:
+            # if no point are matched, just continue
+            continue
 
         # update the kalman filter based on the measurements
         for x, y in matching_points:

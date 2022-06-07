@@ -9,7 +9,7 @@ Recall:
 # Current Harris corner detector configuration
 current_conf = {
     "block_size": 2,
-    "k_size": 3,
+    "k_size": 7,
     "k": 0.04,
-    "tresh": 0.2,
+    "thresh": 0.2,
 }
