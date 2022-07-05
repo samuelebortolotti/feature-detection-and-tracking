@@ -260,7 +260,6 @@ make lukas-kanade
 
 ## 10 Report
 
-The report concerning the implementation details and my considerations regarding the feature detectors is present in the `report` folder.
+The report concerning the implementation details and my considerations regarding the feature detectors is present in the `report/paper` folder.
 
-## Extra
-
+Moreover, a simple LaTeX beamer presentation is presented in the `report/presentation`.

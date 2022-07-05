@@ -1,12 +1,16 @@
 \documentclass[journal]{IEEEtran}
 \usepackage{cite}
 \usepackage{graphicx}
+\ifCLASSINFOpdf
+\else
+\fi
 \usepackage{amsmath}
 \usepackage{mathtools}
 \usepackage{booktabs,ragged2e}
 \usepackage[flushleft]{threeparttable}
 \renewcommand\TPTtagStyle{\textit}
 \usepackage[strings]{underscore}
+\usepackage{algorithm2e}
 \usepackage{minted}
 \usepackage{subfigure}
 \hyphenation{op-tical net-works semi-conduc-tor}
@@ -16,14 +20,10 @@
 \begin{document}
 \BeforeBeginEnvironment{minted}{\medbreak}
 \AfterEndEnvironment{minted}{\medbreak}
-
 \title{Feature Detection and Tracking}
-
 \author{Samuele Bortolotti (229326), Department of Information Engineering and Computer Science, University of Trento\\
-\href{mailto:samuele.bortolotti@studenti.unitn.it}{\texttt{samuele.bortolotti@studenti.unitn.it}} }
-
+\href{mailto:samuele.bortolotti@studenti.unitn.it}{\texttt{samuele.bortolotti@studenti.unitn.it}} }% <-this % stops a space
 \maketitle
-
 \begin{abstract}
 The automated use of unique and quantifiable data to detect the presence, recognize, or define the behavior of objects in a scene has been researched extensively in the computer vision field. When examining a scene, it is appropriate to seek for relevant characteristics, such as colors, forms, and edges, in order to adequately outline the object motion. 
 
@@ -35,7 +35,6 @@ Feature detection, feature tracking, Kalman filter, Lucas-Kanade optical flow, S
 \end{IEEEkeywords}
 
 \IEEEpeerreviewmaketitle
-
 
 \section{Introduction}
 
@@ -99,7 +98,7 @@ Corners, also known as interest points, are relevant since they depict the inter
 This report has considered Harris edge detector~\cite{harris1988combined} as an effective way to detect interest points and subsequently feed them to the tracking algorithm. The main idea behind the approach is that corners can be identified by looking seen as a variation in the gradient in the image. As a brief explanation, the Harris corner detector requires a grayscale representation of the picture, then it sweeps a window across the image employing the Sobel operation to determine its intensity variation. Windows with high intensity variations are likely to contain corners; to detect them, the algorithm computes a score for each window, equal to the difference between the window determinant and the square of its trace multiplied with a scaling factor; after that, the score is used to determine the presence of corners according to one threshold.
 
 \subsection{Blob detector} 
-A Blob is a group of connected pixels in an image which share some common properties such as color or shape. As it may be intuitive, blobs are strictly parameter dependent, which means that in most of the cases, blobs based on the shape are neither rotation nor scale independent whereas those based on colors suffer from illumination issues.
+A Blob is a group of connected pixels in an image which shares some common properties such as color or shape. As it may be intuitive, blobs are strictly parameter dependent, which means that in most of the cases, blobs based on the shape are neither rotation nor scale independent whereas those based on colors suffer from illumination issues.
 
 The OpenCV library~\cite{opencv_library} provides an algorithm to extract blobs from an image which comprises the following steps. First, it converts the source image to a binary image by applying thresholding with several thresholds. Then, it extracts connected components from every binary image and calculates their centers. After that, it groups centers from several binary images by their coordinates, merging close blobs by considering color and proximity. Finally, from the merged shapes, it estimates the centers of blobs and their radiuses and it returns the locations and the sizes of keypoints.
 
@@ -126,11 +125,11 @@ During a sequence of photographs illustrating the temporal development of a scen
 
 Due to noise, shadows, splitting, merging, occlusions, or other difficulties, the algorithm ability to generate a consistent representation may deteriorate overtime.
 
-In this section I provide an high level background of the employed motion trackers.
+In this section I provide a high level background of the employed motion trackers.
 
 \subsection{Lucas-Kanade Optical Flow}
 
-The Lucas-Kanade optical flow algorithm~\cite{lucas1981iterative} is a efficient method to get optical flow information. It works under the assumption that the pixels aspect does not considerably change across two consecutive frames and that the objects' displacement vectors are minimal in that interval. By examining variations in pixel intensity within a particular window, the Lucas-Kanade algorithm finds the best match withing a neighborhood.
+The Lucas-Kanade optical flow algorithm~\cite{lucas1981iterative} is an efficient method to get optical flow information. It works under the assumption that the pixels aspect does not considerably change across two consecutive frames and that the objects' displacement vectors are minimal in that interval. By examining variations in pixel intensity within a particular window, the Lucas-Kanade algorithm finds the best match within a neighborhood.
 
 Usually, when we are talking about the Lucas-Kanade algorithm we refer to its pyramidal implementation, which builds a pyramid of images progressively downsampled. To perform the tracking, the algorithm first considers the matches in the lower detailed picture and then it continuously refines the displacement vector with finer details images.
 
@@ -143,7 +142,7 @@ The Kalman filter generates estimates of the current state variables, as well as
 \label{sec:projectstructure}
 In order to organize the code in a modular way, the repository is organized in sub-modules within a unique module \emph{fdt} (shorthand for feature-description-and-tracking). 
 
-Such organization has allow to test each of the main functionality employed in the final result individually, which not only gives a comprehensive overview of each technique, but also allows to better fine-tune the methods parameters.
+Such organization has allowed to test each of the main functionalities employed in the final result individually, which not only gives a comprehensive overview of each technique, but also allows to better fine-tune the methods parameters.
 
 To facilitate the comprehension, Figure~\ref{fig:repository} portraits the main functionality which the code can carry out. 
 
@@ -167,7 +166,7 @@ $> python -m fdt $FUNCTION $PARAMETERS
 
 To see different aspects of the feature detectors, two test images are provided, one is the standard test image used in the field of image processing, Lena Forsèn, the other one portraits an industrial lime kiln surrounded by trees. The selection of these two images lies on the fact that the image of Lena has several smoothed surfaces and few textures in the hat. The photograph of the lime kiln is characterized by continuous textures and angles; in a such complex environment, it is difficult to find only few significant features.
 
-Furthermore, for both the Harris corner detector and the Blob corner detector it is possible to modify a configuration file, which can be found under the \emph{config} folder. In order to use it, the function needs to be called with \emph{$--$config-file} flag set.
+Furthermore, for both the Harris corner detector and the Blob corner detector, it is possible to modify a configuration file, which can be found under the \emph{config} folder. In order to use it, the function needs to be called with \emph{$--$config-file} flag set.
 
 \subsubsection{Harris corner detector}
 
@@ -373,7 +372,7 @@ However, this has caused several issues with two of the descriptors I chose to a
 The main challenge of the whole pipeline has been to tune correctly the Kalman filter matrices. As stated in the report introduction, this tracking algorithm works under the assumption of linear movement which is not exactly the scenario depicted in the paper. During the development of the assignment I have seen that increasing the process and measurement noise to a high values causes the forecast to assess quickly.
 Furthermore, the Kalman filter has demonstrated to be resilient after the initial assessment step, even if the matcher is not always exact in monitoring the relevant characteristics. However, some flickering can still be observed probably due to the matcher failure deriving from flat or repetitive patterns in a challenging environment.
 
-Finally, due to the descriptors that are required at every frame, the entire pipeline I have built up is exceedingly sluggish, making it unsuitable for SIFT. Furthermore, the Kalman filter does not converge quickly when there are few and sparse data, as seen by the small number of features detected by the blob extractor. When the number of characteristics, and hence observations rises, the findings become considerably more consistent. For this reasons Kalman filter with the blob detectors works really poorly.
+Finally, due to the descriptors that are required at every frame, the entire pipeline I have built up is exceedingly sluggish, making it unsuitable for SIFT. Furthermore, the Kalman filter does not converge quickly when there are few and sparse data, as seen by the small number of features detected by the blob extractor. When the number of characteristics and hence observations rises, the findings become considerably more consistent. For these reasons Kalman filter with the blob detectors works really poorly.
 
 A visual comparison of the different features detector using the Kalman filter is shown in Figure~\ref{fig:kalman}.
 
@@ -397,9 +396,10 @@ The feature recognition and tracking algorithms used are entirely dependent on t
 To conclude, basic feature detectors may be too naive in noisy or demanding environments such as the one portrayed in the test video.
 Although the blob detector is an interesting approach, it is neither agnostic, nor is it rotation or size invariant.
 Furthermore, more complicated feature detectors have been demonstrated to be more rigorous, although this comes at a cost.
-Therefore if a precise system needs to be developed and a lot of processing power is available, then SIFT is definitely the way to go; however, if resources are limited, then ORB is a good alternative to SIFT, which is a less accurate but still a quite robust feature detector. 
+Therefore, if a precise system needs to be developed and a lot of processing power is available, SIFT is definitely the way to go; however, if resources are limited, then ORB is a good alternative to SIFT, which is a less accurate but still a quite robust feature detector. 
 To further improve the overall project, in particular to expand the Kalman filter performances, it would be interesting to integrate it with a sensor capable of providing the object's position.
 Finally, it would be delightful to experiment artificial neural networks features to see how they perform in comparison to traditional features and how they could help to improve the algorithm's performance in the future.
+
 
 \bibliographystyle{IEEEtran}
 \bibliography{bibliography/bibliography}
@@ -407,5 +407,4 @@ Finally, it would be delightful to experiment artificial neural networks feature
 \ifCLASSOPTIONcaptionsoff
   \newpage
 \fi
-
 \end{document}
